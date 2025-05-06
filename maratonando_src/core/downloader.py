@@ -1,8 +1,8 @@
 # /home/marcos/Maratonando/maratonando_src/core/downloader.py
 import subprocess
-import click
 import shutil
 import os
+import logging # Use logging instead of click
 from pathlib import Path
 
 def download_episode(video_url: str, output_path: str = None, filename: str = None):
@@ -14,73 +14,65 @@ def download_episode(video_url: str, output_path: str = None, filename: str = No
         output_path: O diretório onde salvar o vídeo. Padrão: Diretório 'Downloads' do usuário.
         filename: O nome do arquivo (sem extensão). Padrão: Título do vídeo obtido pelo yt-dlp.
     """
+    log = logging.getLogger(__name__) # Get logger
     ytdlp_executable = "yt-dlp"
 
     # Verifica se o yt-dlp está disponível
     if not shutil.which(ytdlp_executable):
-        click.echo(f"Erro: '{ytdlp_executable}' não encontrado. Instale-o para baixar vídeos.", err=True)
-        # Poderia levantar uma exceção ou retornar um status de falha
+        log.error(f"'{ytdlp_executable}' não encontrado. Instale-o para baixar vídeos.")
+        # Consider raising an exception instead of returning False for better error handling upstream
         return False
 
     # Define o diretório de saída padrão se não for fornecido
     if output_path is None:
         try:
-            # Tenta encontrar o diretório de Downloads padrão do usuário
             output_path = str(Path.home() / "Downloads")
-            os.makedirs(output_path, exist_ok=True) # Cria o diretório se não existir
+            os.makedirs(output_path, exist_ok=True)
         except Exception as e:
-            click.echo(f"Aviso: Não foi possível determinar o diretório de Downloads ({e}). Salvando no diretório atual.", err=True)
-            output_path = "." # Salva no diretório atual como fallback
+            log.warning(f"Não foi possível determinar o diretório de Downloads ({e}). Salvando no diretório atual.")
+            output_path = "." # Fallback to current directory
 
     # Monta o comando para o yt-dlp
     command = [
         ytdlp_executable,
-        "--no-playlist",         # Garante que baixe apenas um vídeo, não uma playlist inteira
-        "--merge-output-format", "mp4", # Tenta mesclar em mp4 se houver formatos de áudio/vídeo separados
-        "-o",                    # Define o template do nome do arquivo de saída
+        "--no-playlist",
+        "--merge-output-format", "mp4",
+        "-o",
     ]
 
     # Constrói o template de saída completo (caminho + nome)
     if filename:
-        # Usa o nome de arquivo fornecido, adicionando a extensão automaticamente pelo yt-dlp
         output_template = os.path.join(output_path, f"{filename}.%(ext)s")
     else:
-        # Usa o título do vídeo como nome de arquivo (padrão do yt-dlp)
         output_template = os.path.join(output_path, "%(title)s.%(ext)s")
     command.append(output_template)
 
-    # Adiciona a URL do vídeo ao comando
     command.append(video_url)
 
-    click.echo(f"Executando download: {' '.join(command)}")
+    log.info(f"Executando download: {' '.join(command)}")
 
     try:
         # Executa o comando yt-dlp
         # check=True fará o Python levantar um erro (CalledProcessError) se yt-dlp retornar um código de erro
         # capture_output=True pega a saída padrão e erro (útil para depuração)
-        # text=True decodifica a saída como texto
         result = subprocess.run(command, check=True, capture_output=True, text=True, encoding='utf-8')
-        click.echo("Download concluído com sucesso!")
+        log.info("Download concluído com sucesso!")
         # Tenta mostrar o caminho final (substituindo placeholders do template)
         final_path_guess = output_template.replace('%(title)s', 'VIDEO').replace('%(ext)s', 'mp4')
-        click.echo(f"Salvo em diretório: {output_path} (nome exato depende do título/extensão)")
-        return True # Indica sucesso
+        log.info(f"Salvo em diretório: {output_path} (nome exato depende do título/extensão)")
+        return True
     except subprocess.CalledProcessError as e:
-        # Erro específico do processo yt-dlp
-        click.echo(f"Erro durante o download com yt-dlp:", err=True)
-        click.echo(f"Comando: {' '.join(e.cmd)}", err=True)
-        click.echo(f"Código de saída: {e.returncode}", err=True)
-        # Mostra a saída de erro do yt-dlp, que geralmente contém informações úteis
-        click.echo(f"Erro (stderr):\n{e.stderr}", err=True)
-        return False # Indica falha
+        log.error(f"Erro durante o download com yt-dlp:")
+        log.error(f"Comando: {' '.join(e.cmd)}")
+        log.error(f"Código de saída: {e.returncode}")
+        log.error(f"Erro (stderr):\n{e.stderr}")
+        return False
     except FileNotFoundError:
-        # Caso raro onde yt-dlp desaparece entre shutil.which e subprocess.run
-         click.echo(f"Erro Crítico: '{ytdlp_executable}' não encontrado durante a execução.", err=True)
+         log.critical(f"'{ytdlp_executable}' não encontrado durante a execução.")
          return False
     except Exception as e:
-        # Outros erros inesperados
-        click.echo(f"Ocorreu um erro inesperado ao tentar baixar o vídeo: {e}", err=True)
-        return False # Indica falha
+        log.error(f"Ocorreu um erro inesperado ao tentar baixar o vídeo: {e}", exc_info=True)
+        return False
 
 # Você pode adicionar um bloco if __name__ == '__main__': aqui para testar a função diretamente
 # Exemplo:

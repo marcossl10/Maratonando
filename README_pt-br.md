@@ -53,3 +53,4 @@ Você geralmente pode instalar as dependências de execução usando seu gerenci
 Após a instalação, você pode encontrar o "Maratonando" no menu de aplicativos do seu sistema ou executá-lo pelo terminal:
 ```bash
 maratonando
+Quer me pagar um café? Pix 83980601072
