@@ -13,7 +13,7 @@ depends=(
     'tk'
     'python-requests'
     'python-beautifulsoup4' # Para parsear HTML
-    'python-cloudscraper'   # Para lidar com proteções Cloudflare
+   #'python-cloudscraper'   # Para lidar com proteções Cloudflare
     'python-click'          # Para parsers ou CLI
     'yt-dlp'                # Para baixar vídeos
    #'python-sv-ttk'         # Para o tema da GUI - Verifique se está instalado via pip ou se precisa como dependência
