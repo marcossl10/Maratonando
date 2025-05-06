@@ -17,10 +17,14 @@ A simple application to search for and watch anime, built with Python and Tkinte
 
 Make sure you have the following dependencies installed:
 
+*   **Runtime:** `python`, `tk`, `python-requests`, `python-beautifulsoup4`, `python-click`, `yt-dlp`, `sv-ttk`, `mpv`
 *   **Runtime:** `python`, `tk`, `python-requests`, `python-beautifulsoup4`, `python-click`, `yt-dlp`, `python-sv-ttk`, `mpv`
 *   **Build-time (for `makepkg`):** `base-devel`, `git`
 
-You can usually install the runtime dependencies using your package manager. The `PKGBUILD` will list them, and `makepkg -si` should prompt to install missing ones.
+Most runtime dependencies can be installed using your system's package manager.
+`python-sv-ttk` is an exception as it's typically found in the Arch User Repository (AUR). You can install it using an AUR helper such as `yay` (e.g., `yay -S python-sv-ttk`) or `paru` (e.g., `paru -S python-sv-ttk`).
+
+The `PKGBUILD` file, used with the recommended `makepkg -si` installation method, lists all dependencies. `makepkg -si` should attempt to resolve and install these, including AUR packages like `python-sv-ttk` if your system is configured with an AUR helper or if you have pre-installed it.
 
 ---
 
