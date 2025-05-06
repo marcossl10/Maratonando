@@ -48,6 +48,9 @@ class AnimeApp:
         self.history_tab = ttk.Frame(self.notebook)
         self.notebook.add(self.history_tab, text="Histórico")
 
+        self.about_tab = ttk.Frame(self.notebook) # Cria a frame para a nova aba
+        self.notebook.add(self.about_tab, text="Sobre") # Adiciona a aba "Sobre"
+
         self.search_controls_frame = ttk.Frame(self.search_tab)
         self.search_controls_frame.pack(pady=5)
 
@@ -136,6 +139,9 @@ class AnimeApp:
         self.clear_history_button = ttk.Button(self.history_button_frame, text="Limpar Histórico", command=self.clear_history)
         self.clear_history_button.pack(side=tk.LEFT, padx=5)
 
+        # self.about_button = ttk.Button(self.history_button_frame, text="Sobre", command=self.show_about_info) # REMOVE o botão daqui
+        # self.about_button.pack(side=tk.LEFT, padx=5)
+
         self.status_label = ttk.Label(root, text="Pronto.")
         self.status_label.pack(side=tk.BOTTOM, fill=tk.X)
 
@@ -155,6 +161,9 @@ class AnimeApp:
         self.load_history()
         self.notebook.select(self.search_tab)
 
+        # --- Popula a aba "Sobre" ---
+        self.populate_about_tab()
+
     def _set_icon(self, icon_path: Path):
         """Define o ícone da janela, tentando diferentes métodos."""
         try:
@@ -170,6 +179,23 @@ class AnimeApp:
                     self.root.iconphoto(True, img)
         except Exception as e:
             print(f"[Icon Error] Não foi possível definir o ícone '{icon_path}': {e}")
+
+    def populate_about_tab(self):
+        """Adiciona os widgets de informação na aba 'Sobre'."""
+        about_frame = ttk.Frame(self.about_tab, padding="20")
+        about_frame.pack(expand=True)
+
+        message = (
+            "Criador: Marcos\n" 
+            "Contato: marcosslprado@gmail.com\n\n"
+            "me ajude a manter"
+            "Me pague um café? PIX: 83980601072"
+        )
+
+        about_label = ttk.Label(about_frame, text=message, justify=tk.CENTER, font=("Segoe UI", 10))
+        about_label.pack()
+
+    # def show_about_info(self): # REMOVE a função antiga que usava messagebox
 
     def refresh_history(self):
         """Recarrega a lista de histórico do arquivo."""
@@ -226,6 +252,7 @@ class AnimeApp:
         try:
             self.refresh_history_button.config(state=history_button_state)
             self.clear_history_button.config(state=history_button_state)
+            # self.about_button.config(state=history_button_state) # Não existe mais aqui
         except tk.TclError:
             pass
         if state == tk.DISABLED:
@@ -708,7 +735,7 @@ class AnimeApp:
         try:
             popup = tk.Toplevel(self.root)
             popup.title("Carregando")
-            popup.geometry("210x85")
+            popup.geometry("210x85") # Tamanho ajustado
             popup.resizable(False, False)
             popup.transient(self.root)
 
@@ -716,8 +743,8 @@ class AnimeApp:
             root_y = self.root.winfo_y()
             root_w = self.root.winfo_width()
             root_h = self.root.winfo_height()
-            popup_x = root_x + (root_w // 2) - (200 // 2)
-            popup_y = root_y + (root_h // 2) - (50 // 2)
+            popup_x = root_x + (root_w // 2) - (210 // 2) # Ajustar largura
+            popup_y = root_y + (root_h // 2) - (85 // 2)  # Ajustar altura
             popup.geometry(f"+{popup_x}+{popup_y}")
 
             label_popup = ttk.Label(popup, text="Iniciando player...\nAguarde de 5 a 30 segundos.", padding=(10, 10), justify=tk.CENTER)
