@@ -844,7 +844,7 @@ class AnimeApp:
             # MOVER CRIAÇÃO DO POPUP PARA ANTES DE CHAMAR play_video
             popup = tk.Toplevel(self.root)
             popup.title("Carregando")
-            popup.geometry("200x50") # Tamanho pequeno
+            popup.geometry("200x80") # Tamanho pequeno
             popup.resizable(False, False)
             popup.transient(self.root) # Associar à janela principal
             # popup.grab_set() # REMOVER: Pode causar conflitos de timing/foco
@@ -859,7 +859,7 @@ class AnimeApp:
             popup_y = root_y + (root_h // 2) - (50 // 2)
             popup.geometry(f"+{popup_x}+{popup_y}")
 
-            label_popup = ttk.Label(popup, text="Iniciando player...\nAguarde de 5 a 30 segundos.", padding=(20, 20))
+            label_popup = ttk.Label(popup, text="Iniciando player...\nAguarde de 5 a 30 segundos.", padding=(10, 10))
             label_popup.pack(expand=True, fill=tk.BOTH)
             self.root.update_idletasks() # Força a atualização da UI para mostrar o popup
             # --- Fim Popup ---
