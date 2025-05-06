@@ -188,8 +188,8 @@ class AnimeApp:
         message = (
             "Criador: Marcos\n" 
             "Contato: marcosslprado@gmail.com\n\n"
-            "me ajude a manter\n\n"
-            "Me pague um café? PIX: 83980601072"
+            "Me ajude a manter\n\n"
+            "Que tal um café? PIX: 83980601072"
         )
 
         about_label = ttk.Label(about_frame, text=message, justify=tk.CENTER, font=("Segoe UI", 10))
