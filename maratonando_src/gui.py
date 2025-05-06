@@ -188,7 +188,7 @@ class AnimeApp:
         message = (
             "Criador: Marcos\n" 
             "Contato: marcosslprado@gmail.com\n\n"
-            "me ajude a manter"
+            "me ajude a manter\n\n"
             "Me pague um café? PIX: 83980601072"
         )
 
