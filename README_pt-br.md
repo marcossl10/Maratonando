@@ -20,7 +20,10 @@ Certifique-se de ter as seguintes dependências instaladas:
 *   **Para Rodar:** `python`, `tk`, `python-requests`, `python-beautifulsoup4`, `python-click`, `yt-dlp`, `python-sv-ttk`, `mpv`
 *   **Para Compilar (com `makepkg`):** `base-devel`, `git`
 
-Você geralmente pode instalar as dependências de execução usando seu gerenciador de pacotes. O `PKGBUILD` as lista, e o comando `makepkg -si` deve solicitar a instalação das que estiverem faltando.
+A maioria das dependências de execução pode ser instalada usando o gerenciador de pacotes do seu sistema.
+O `python-sv-ttk` é uma exceção, pois geralmente é encontrado no Arch User Repository (AUR). Você pode instalá-lo usando um auxiliar AUR como `yay` (ex: `yay -S python-sv-ttk`) ou `paru` (ex: `paru -S python-sv-ttk`).
+
+O arquivo `PKGBUILD`, usado com o método de instalação recomendado `makepkg -si`, lista todas as dependências. O comando `makepkg -si` deve tentar resolver e instalar estas dependências, incluindo pacotes do AUR como o `python-sv-ttk`, se o seu sistema estiver configurado com um auxiliar AUR ou se você o tiver pré-instalado.
 
 ---
 
