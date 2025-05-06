@@ -1,4 +1,4 @@
-# /home/marcos/Maratonando/PKGBUILD (Modificado para fontes locais - Tentativa 10 - cloudscraper dep)
+# /home/marcos/Maratonando/PKGBUILD 
 
 pkgname=maratonando
 pkgver=1.1.1
