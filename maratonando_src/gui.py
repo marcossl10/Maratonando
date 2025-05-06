@@ -859,7 +859,7 @@ class AnimeApp:
             popup_y = root_y + (root_h // 2) - (50 // 2)
             popup.geometry(f"+{popup_x}+{popup_y}")
 
-            label_popup = ttk.Label(popup, text="Iniciando player...", padding=(10, 10))
+            label_popup = ttk.Label(popup, text="Iniciando player...\nAguarde de 5 a 30 segundos.", padding=(10, 10))
             label_popup.pack(expand=True, fill=tk.BOTH)
             self.root.update_idletasks() # Força a atualização da UI para mostrar o popup
             # --- Fim Popup ---
