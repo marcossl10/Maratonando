@@ -19,10 +19,10 @@ depends=(
 makedepends=()
 # O makepkg irá nomear o diretório fonte como $pkgname-$pkgver
 # Exemplo: maratonando-2.0.0
-source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/refs/tags/v${pkgver}.tar.gz"
+source=("${pkgname}-${pkgver}.tar.gz::${url%.git}/archive/refs/tags/v${pkgver}.tar.gz"
         "maratonando.desktop"
-        "maratonando.png::${url}/raw/main/icons/maratonando.png" # Assume que o ícone está em /icons no repo
-        "LICENSE::${url}/raw/main/LICENSE") # Assume que a licença está na raiz do repo
+        "maratonando.png::${url%.git}/raw/main/icons/maratonando.png" # Assume que o ícone está em /icons no repo
+        "LICENSE::${url%.git}/raw/main/LICENSE") # Assume que a licença está na raiz do repo
 sha256sums=('SKIP' # Para o tar.gz do código fonte, idealmente você geraria isso após o primeiro download
             'SKIP' # Para maratonando.desktop local
             'SKIP' # Para maratonando.png do repo
