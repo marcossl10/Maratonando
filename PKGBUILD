@@ -29,9 +29,16 @@ sha256sums=('SKIP' # Para o tar.gz do código fonte, idealmente você geraria is
             'SKIP') # Para LICENSE do repo
 
 prepare() {
-    cd "${srcdir}/${pkgname}-${pkgver}" # Entra no diretório do código fonte extraído
-    echo "Conteúdo de ${srcdir}/${pkgname}-${pkgver} após extração:"
-    ls -lah "$srcdir"
+    # Navega para o diretório srcdir primeiro
+    cd "${srcdir}"
+    # Encontra o diretório extraído (deve haver apenas um após a extração do tarball)
+    # e entra nele. O nome pode variar dependendo de como o GitHub nomeia o diretório raiz no tarball.
+    # Ex: Maratonando-2.0.0 ou Maratonando-v2.0.0
+    extracted_dir=$(ls -d */ | head -n 1 | sed 's/\///') # Pega o primeiro diretório e remove a barra final
+    cd "${extracted_dir}"
+    echo "Entrou em: $(pwd)"
+    echo "Conteúdo de $(pwd) após extração:"
+    ls -lah
 }
 
 package() {
