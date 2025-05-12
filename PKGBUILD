@@ -42,8 +42,6 @@ prepare() {
 }
 
 package() {
-    cd "$srcdir"
-
     _pythondir="${pkgdir}/usr/lib/python$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')/site-packages"
 
     install -d "${_pythondir}/${pkgname}/core/parsers"
@@ -55,9 +53,10 @@ package() {
 
     # --- Verificação Essencial ---
     if [ ! -d "maratonando_src" ]; then
-        echo "ERRO: Diretório fonte 'maratonando_src' não encontrado em '${srcdir}/${pkgname}-${pkgver}'!" >&2
-        echo "Conteúdo de '${srcdir}/${pkgname}-${pkgver}':" >&2
-        ls -lah "${srcdir}/${pkgname}-${pkgver}" >&2
+        # Since prepare() cd's into the extracted source, pwd is the extracted source dir
+        echo "ERRO: Diretório fonte 'maratonando_src' não encontrado em '$(pwd)'!" >&2
+        echo "Conteúdo de '$(pwd)':" >&2
+        ls -lah "$(pwd)" >&2
         return 1 # Falha o build
     fi
     # --- Fim Verificação ---
