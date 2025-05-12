@@ -42,6 +42,13 @@ prepare() {
 }
 
 package() {
+    # Navega para o diretório do código fonte extraído.
+    # O nome do diretório pode variar (ex: $pkgname-$pkgver ou o nome do repo com a tag).
+    # Esta lógica é similar à da função prepare().
+    cd "${srcdir}" # Garante que estamos em srcdir
+    extracted_dir=$(ls -d */ | head -n 1 | sed 's/\///') # Encontra o diretório extraído
+    cd "${extracted_dir}" # Entra no diretório extraído
+
     _pythondir="${pkgdir}/usr/lib/python$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')/site-packages"
 
     install -d "${_pythondir}/${pkgname}/core/parsers"
