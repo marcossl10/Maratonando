@@ -1,0 +1,16 @@
+pkgbase = maratonando
+	pkgdesc = Busca e assiste animes.
+	pkgver = 1.1.1
+	pkgrel = 10
+	url = https://github.com/marcossl10/Maratonando.git
+	arch = any
+	license = MIT
+	depends = python
+	depends = tk
+	depends = python-requests
+	depends = python-beautifulsoup4
+	depends = python-click
+	depends = yt-dlp
+	depends = mpv
+
+pkgname = maratonando

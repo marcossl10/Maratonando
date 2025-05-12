@@ -6,12 +6,13 @@ from .core import parsers
 from .core.player import play_video
 import traceback
 
-# Mapeamento de nome da fonte para o módulo do parser
+# Mapeamento de nome da fonte para instâncias das classes de parser.
+# A chave DEVE corresponder ao valor do campo 'source' nos resultados de `perform_search`.
 PARSER_MAP = {
-    'AnimeFire': parsers.animefire_parser,
-    # 'Pobreflix': parsers.pobreflix_parser, # Removido ou comentado
-    'MinhaSerie': parsers.minhaserie_parser, # Adicionado
-    # Adicionar outros parsers aqui
+    'AnimeFire': parsers.AnimeFireParser(),
+    'AnimesOnline': parsers.AnimesOnlineParser(),
+    # Adicione outros parsers aqui conforme necessário.
+    # Ex: 'MeuNovoParser': parsers.MeuNovoParser(),
 }
 
 @click.group()
@@ -26,7 +27,11 @@ def cli():
 def buscar(query):
     """Busca por animes, filmes ou séries."""
     click.echo(f"Buscando por: {query}...")
-    results = perform_search(query)
+
+    # Cria uma lista de instâncias de parsers ativos a partir do PARSER_MAP.
+    active_parser_instances = [parser_instance for parser_instance in PARSER_MAP.values() if parser_instance is not None]
+
+    results = perform_search(query, active_parser_instances)
 
     if not results:
         click.echo("Nenhum resultado encontrado.")
@@ -44,26 +49,24 @@ def buscar(query):
                 click.echo(f"Você selecionou: {selected_item.get('title')}")
                 click.echo(f"URL: {selected_item.get('url')}")
 
-                # Determina qual parser usar baseado na fonte guardada no resultado
                 source_name = selected_item.get('source')
-                parser_module = PARSER_MAP.get(source_name)
+                parser_instance = PARSER_MAP.get(source_name)
 
-                if not parser_module:
+                if not parser_instance:
                     click.echo(f"  [CLI] Parser para a fonte '{source_name}' não encontrado no PARSER_MAP.", err=True)
                     return
 
-                if not hasattr(parser_module, 'fetch_details') or not hasattr(parser_module, 'get_video_sources'):
-                     click.echo(f"  [CLI] Parser '{source_name}' não implementa 'fetch_details' ou 'get_video_sources'.", err=True)
+                if not hasattr(parser_instance, 'get_details') or \
+                   not hasattr(parser_instance, 'get_video_source'):
+                     click.echo(f"  [CLI] Parser '{source_name}' não implementa 'get_details' ou 'get_video_source'.", err=True)
                      return
 
-                item_details = parser_module.fetch_details(selected_item['url'])
+                item_details = parser_instance.get_details(selected_item['url'], fallback_image=selected_item.get('image', ''))
 
                 if item_details:
                     item_type = item_details.get('type', 'unknown')
 
-                    # Ajustado para checar 'seasons' ou 'episodes' dependendo do parser
                     if item_type == 'series' or 'episodes' in item_details:
-                        # TODO: Refinar a lógica de seleção de temporada/episódio quando implementado no parser MinhaSerie
                         if 'episodes' in item_details and item_details['episodes']:
                             click.echo("Episódios encontrados:")
                             episodes = item_details['episodes']
@@ -78,15 +81,13 @@ def buscar(query):
                                 click.echo(f"URL do episódio/vídeo: {selected_episode.get('url')}")
 
                                 episode_page_url = selected_episode['url']
-
-                                video_sources = parser_module.get_video_sources(episode_page_url)
+                                video_sources = parser_instance.get_video_source(episode_page_url)
 
                                 if video_sources:
                                     final_video_url = None
                                     selected_label = "???"
 
                                     if len(video_sources) == 1:
-                                        # Se só tem uma fonte, usa ela direto
                                         final_video_url = video_sources[0]['src']
                                         selected_label = video_sources[0]['label']
                                         click.echo(f"  [CLI] Encontrada única fonte de vídeo ({selected_label}).")
@@ -112,7 +113,7 @@ def buscar(query):
                                     click.echo("  [CLI] Não foi possível obter fontes de vídeo para o episódio.", err=True)
                             else:
                                 click.echo("Número de episódio inválido.", err=True)
-                        elif item_type == 'series': # Caso MinhaSerie retorne 'series' mas episódios não implementados
+                        elif item_type == 'series':
                              click.echo("  [CLI] Parser para séries deste site ainda não implementado completamente (seleção de episódio).", err=True)
                         else:
                              click.echo("  [CLI] Detalhes de série inválidos ou incompletos.", err=True)
@@ -120,8 +121,7 @@ def buscar(query):
                     elif item_type == 'movie' or item_type == 'unknown':
                         click.echo("  [CLI] Item detectado como Filme ou tipo desconhecido.")
                         content_url_for_movie = item_details.get('content_url', selected_item['url'])
-
-                        video_sources = parser_module.get_video_sources(content_url_for_movie)
+                        video_sources = parser_instance.get_video_source(content_url_for_movie)
 
                         if video_sources:
                             final_video_url = None

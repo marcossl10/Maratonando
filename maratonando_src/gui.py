@@ -16,7 +16,7 @@ import sys
 from .core.parsers import animefire_parser
 from .core.player import play_video
 
-HISTORY_FILE = "history.json" # Nome do arquivo de histórico
+HISTORY_FILE = "history.json"
 
 class AnimeApp:
     def __init__(self, root):
@@ -24,7 +24,6 @@ class AnimeApp:
 
         installed_icon_path = Path("/usr/share/maratonando/icons/maratonando.png")
         dev_icon_path = Path(__file__).parent.parent / "icons" / "maratonando.png"
-        # Usa o caminho instalado se existir, senão usa o de desenvolvimento
         icon_path = installed_icon_path if installed_icon_path.exists() else dev_icon_path
         self._set_icon(icon_path)
 
@@ -32,7 +31,6 @@ class AnimeApp:
 
         sv_ttk.set_theme("dark")
 
-        # Configura cores para widgets Tk clássicos (Listbox)
         self.listbox_bg = "#2b2b2b"
         self.listbox_fg = "#ffffff"
         self.listbox_select_bg = "#0078d4"
@@ -48,8 +46,8 @@ class AnimeApp:
         self.history_tab = ttk.Frame(self.notebook)
         self.notebook.add(self.history_tab, text="Histórico")
 
-        self.about_tab = ttk.Frame(self.notebook) # Cria a frame para a nova aba
-        self.notebook.add(self.about_tab, text="Sobre") # Adiciona a aba "Sobre"
+        self.about_tab = ttk.Frame(self.notebook)
+        self.notebook.add(self.about_tab, text="Sobre")
 
         self.search_controls_frame = ttk.Frame(self.search_tab)
         self.search_controls_frame.pack(pady=5)
@@ -59,7 +57,7 @@ class AnimeApp:
 
         self.search_entry = ttk.Entry(self.search_controls_frame, width=40)
         self.search_entry.pack(pady=5)
-        self.search_entry.bind("<Return>", self.start_search_thread) # Buscar ao pressionar Enter
+        self.search_entry.bind("<Return>", self.start_search_thread)
 
         self.button_frame = ttk.Frame(self.search_controls_frame)
         self.button_frame.pack(pady=5)
@@ -128,7 +126,7 @@ class AnimeApp:
         self.history_scrollbar.config(command=self.history_listbox.yview)
         self.history_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         self.history_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        self.history_listbox.bind("<Double-Button-1>", self.on_history_select) # Evento para tocar do histórico (Duplo Clique)
+        self.history_listbox.bind("<Double-Button-1>", self.on_history_select)
 
         self.history_button_frame = ttk.Frame(self.history_tab)
         self.history_button_frame.pack(pady=5)
@@ -139,20 +137,16 @@ class AnimeApp:
         self.clear_history_button = ttk.Button(self.history_button_frame, text="Limpar Histórico", command=self.clear_history)
         self.clear_history_button.pack(side=tk.LEFT, padx=5)
 
-        # self.about_button = ttk.Button(self.history_button_frame, text="Sobre", command=self.show_about_info) # REMOVE o botão daqui
-        # self.about_button.pack(side=tk.LEFT, padx=5)
-
         self.status_label = ttk.Label(root, text="Pronto.")
         self.status_label.pack(side=tk.BOTTOM, fill=tk.X)
 
-        # Variáveis de estado
         self.search_results_data = []
         self.history_data = []
         self.selected_anime_title = ""
         self.current_selected_episode = None
 
         self.episode_details_data = {}
-        self.is_updating_episodes = False # Flag para controlar atualização
+        self.is_updating_episodes = False
         self.episodes_per_page = 10
         self.current_episode_page = 1
         self.last_selected_episode_listbox_index = -1
@@ -161,7 +155,6 @@ class AnimeApp:
         self.load_history()
         self.notebook.select(self.search_tab)
 
-        # --- Popula a aba "Sobre" ---
         self.populate_about_tab()
 
     def _set_icon(self, icon_path: Path):
@@ -171,10 +164,10 @@ class AnimeApp:
                 if os.name == 'nt': # Windows
                     if icon_path.suffix.lower() == '.ico':
                         self.root.iconbitmap(str(icon_path))
-                    else: # Tenta PhotoImage para outros formatos no Windows
+                    else:
                         img = tk.PhotoImage(file=str(icon_path))
                         self.root.iconphoto(True, img)
-                else: # Linux/macOS (e outros)
+                else: # Linux/macOS
                     img = tk.PhotoImage(file=str(icon_path))
                     self.root.iconphoto(True, img)
         except Exception as e:
@@ -194,8 +187,6 @@ class AnimeApp:
 
         about_label = ttk.Label(about_frame, text=message, justify=tk.CENTER, font=("Segoe UI", 10))
         about_label.pack()
-
-    # def show_about_info(self): # REMOVE a função antiga que usava messagebox
 
     def refresh_history(self):
         """Recarrega a lista de histórico do arquivo."""
@@ -240,10 +231,9 @@ class AnimeApp:
         listbox_state = tk.DISABLED if state == tk.DISABLED else tk.NORMAL
         try:
             self.results_listbox.config(state=listbox_state)
-        except tk.TclError: # Pode dar erro se a janela estiver fechando
+        except tk.TclError:
             pass
         try:
-            # Não desabilitamos mais a listbox de episódios globalmente aqui
             pass
         except tk.TclError:
             pass
@@ -252,7 +242,6 @@ class AnimeApp:
         try:
             self.refresh_history_button.config(state=history_button_state)
             self.clear_history_button.config(state=history_button_state)
-            # self.about_button.config(state=history_button_state) # Não existe mais aqui
         except tk.TclError:
             pass
         if state == tk.DISABLED:
@@ -262,7 +251,6 @@ class AnimeApp:
             except tk.TclError:
                 pass
         # Se estiver habilitando, a função _re_enable_episode_selection ou update_episode_list_page cuidará do estado dos botões
-
     def load_history(self):
         """Carrega o histórico do arquivo JSON e atualiza a listbox."""
         home = Path.home()
@@ -282,11 +270,10 @@ class AnimeApp:
 
         try:
             self.history_listbox.delete(0, tk.END)
-            # Mostra os mais recentes primeiro
             for item in reversed(self.history_data):
                 display_text = f"{item.get('anime_title', '?')} - {item.get('episode_title', '?')}"
                 self.history_listbox.insert(tk.END, display_text)
-        except tk.TclError: # Ignora erro se a janela estiver fechando
+        except tk.TclError:
             pass
 
     def save_history(self):
@@ -318,11 +305,9 @@ class AnimeApp:
             "timestamp": timestamp
         }
 
-        # Remove item idêntico (baseado na URL) se já existir para colocá-lo no topo
         self.history_data = [item for item in self.history_data if item.get('episode_url') != episode_url]
         self.history_data.append(new_entry)
 
-        # Limitar tamanho do histórico
         max_history = 100
         if len(self.history_data) > max_history:
             self.history_data = self.history_data[-max_history:]
@@ -369,7 +354,6 @@ class AnimeApp:
                     self.update_status("Nenhum anime encontrado.")
                 self.results_listbox.bind("<<ListboxSelect>>", self.on_anime_select)
 
-                # Verifica se a busca foi iniciada pelo histórico
                 if self.target_episode_url_from_history:
                     found_anime_for_history = False
                     for i, result in enumerate(self.search_results_data):
@@ -711,7 +695,6 @@ class AnimeApp:
         except Exception as play_err:
              print(f"[Thread Player Debug] Erro inesperado na thread do player: {play_err}", file=sys.stderr)
         finally:
-            # Após o player fechar (ou falhar), agenda a reabilitação da UI na thread principal
             print("[Thread Player Debug] Player fechado ou falhou. Agendando reabilitação da UI.")
             self.root.after(0, self._re_enable_episode_selection)
 
@@ -724,7 +707,6 @@ class AnimeApp:
             return
 
         try:
-            # Usa a URL original da página do episódio para o histórico
             self.add_to_history(self.selected_anime_title, episode_title_original, episode_url_original)
         except Exception as history_err:
             print(f"[History Error] Erro ao adicionar ao histórico: {history_err}")
@@ -735,7 +717,7 @@ class AnimeApp:
         try:
             popup = tk.Toplevel(self.root)
             popup.title("Carregando")
-            popup.geometry("210x85") # Tamanho ajustado
+            popup.geometry("210x85")
             popup.resizable(False, False)
             popup.transient(self.root)
 
@@ -743,8 +725,8 @@ class AnimeApp:
             root_y = self.root.winfo_y()
             root_w = self.root.winfo_width()
             root_h = self.root.winfo_height()
-            popup_x = root_x + (root_w // 2) - (210 // 2) # Ajustar largura
-            popup_y = root_y + (root_h // 2) - (85 // 2)  # Ajustar altura
+            popup_x = root_x + (root_w // 2) - (210 // 2)
+            popup_y = root_y + (root_h // 2) - (85 // 2)
             popup.geometry(f"+{popup_x}+{popup_y}")
 
             label_popup = ttk.Label(popup, text="Iniciando player...\nAguarde de 5 a 30 segundos.", padding=(10, 10), justify=tk.CENTER)

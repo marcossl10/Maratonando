@@ -1,59 +1,61 @@
 # Maratonando
 
-A simple application to search for and watch anime, built with Python and Tkinter.
+Um aplicativo para buscar e assistir animes, feito em Python com a interface gráfica Flet e Linha de Comando (CLI).
 
 ---
 
-## Features
+## Funcionalidades
 
-*   Anime search (currently using AnimeFire).
-*   Episode listing.
-*   Episode playback using the MPV player.
-*   Simple graphical user interface.
-
----
-
-## Dependencies
-
-Make sure you have the following dependencies installed:
-
-*   **Runtime:** `python`, `tk`, `python-requests`, `python-beautifulsoup4`, `python-click`, `yt-dlp`, `sv-ttk`, `mpv`
-*   **Runtime:** `python`, `tk`, `python-requests`, `python-beautifulsoup4`, `python-click`, `yt-dlp`, `python-sv-ttk`, `mpv`
-*   **Build-time (for `makepkg`):** `base-devel`, `git`
-
-Most runtime dependencies can be installed using your system's package manager.
-`python-sv-ttk` is an exception as it's typically found in the Arch User Repository (AUR). You can install it using an AUR helper such as `yay` (e.g., `yay -S python-sv-ttk`) or `paru` (e.g., `paru -S python-sv-ttk`).
-
-The `PKGBUILD` file, used with the recommended `makepkg -si` installation method, lists all dependencies. `makepkg -si` should attempt to resolve and install these, including AUR packages like `python-sv-ttk` if your system is configured with an AUR helper or if you have pre-installed it.
+*   Busca de animes em diferentes fontes (atualmente AnimeFire e AnimesOnline).
+*   Interface gráfica moderna (Flet) e Linha de Comando (CLI).
+*   Seleção de servidor (fonte) na interface gráfica.
+*   Listagem de episódios.
+*   Obtenção de links diretos de vídeo.
+*   Reprodução de episódios usando o player MPV.
 
 ---
 
-## Installation (Arch Linux)
+## Dependências
 
-1.  **Install build dependencies (if you don't have them):**
+Certifique-se de ter as seguintes dependências instaladas:
+
+*   **Para Rodar (com Flet):** `python`, `python-flet`, `python-requests`, `python-beautifulsoup4`, `python-click`, `yt-dlp`, `mpv`
+*   **Para Compilar (com `makepkg`):** `base-devel`, `git`
+
+As dependências de execução podem ser instaladas usando o gerenciador de pacotes do seu sistema. O `python-flet` é geralmente encontrado no Arch User Repository (AUR). Você pode instalá-lo usando um auxiliar AUR como `yay` (ex: `yay -S python-flet`) ou `paru` (ex: `paru -S python-flet`).
+
+O arquivo `PKGBUILD`, usado com o método de instalação recomendado `makepkg -si`, lista todas as dependências necessárias para a versão Flet. O comando `makepkg -si` deve tentar resolver e instalar estas dependências, incluindo pacotes do AUR como o `python-flet`, se o seu sistema estiver configurado com um auxiliar AUR ou se você o tiver pré-instalado.
+
+---
+
+## Instalação (Arch Linux)
+
+1.  **Instale as dependências de compilação (se ainda não tiver):**
     ```bash
     sudo pacman -S --needed base-devel git
     ```
 
-2.  **Clone the repository:**
+2.  **Clone o repositório:**
     ```bash
     git clone https://github.com/marcossl10/Maratonando.git
     cd Maratonando
     ```
 
-3.  **Build and install the package (Recommended Method):**
+3.  **Compile e instale o pacote (Método Recomendado):**
     ```bash
     makepkg -si
     ```
-    *   This command uses the `PKGBUILD` file.
-    *   It will automatically download the correct source code version from the GitHub release tag.
-    *   It handles dependencies listed in the `PKGBUILD`.
-    *   It installs the application correctly integrated with the system (menu entry, icon, executable path).
+    *   Este comando usa o arquivo `PKGBUILD`.
+    *   Ele baixará automaticamente a versão correta do código-fonte da tag de release do GitHub.
+    *   Ele lida com as dependências listadas no `PKGBUILD`.
+    *   Ele instala a aplicação corretamente integrada ao sistema (entrada de menu, ícone, caminho do executável).
 
 ---
 
-## Usage
+## Uso
 
-After installation, you can find "Maratonando" in your system's application menu or run it from the terminal:
+Após a instalação, você pode encontrar o "Maratonando" no menu de aplicativos do seu sistema ou executá-lo pelo terminal:
 ```bash
 maratonando
+
+"Me pague um café! Pix 83980601072"

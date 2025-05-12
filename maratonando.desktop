@@ -1,5 +1,5 @@
 [Desktop Entry]
-Version=1.1.1
+Version=2.0.0
 Name=Maratonando
 Comment=Busca e assiste animes
 Exec=maratonando
@@ -7,4 +7,3 @@ Icon=maratonando
 Terminal=false
 Type=Application
 Categories=AudioVideo;Video;Network;Player;
-

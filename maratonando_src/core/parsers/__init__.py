@@ -1,6 +1,13 @@
-# Importa os módulos dos parsers para torná-los acessíveis
-# quando alguém importar o pacote 'parsers'.
+# /home/marcos/Documentos/Maratonando1/maratonando_src/core/parsers/__init__.py
 
-# Simplesmente importa os módulos para dentro do namespace do pacote
-from . import animefire_parser
-# from . import minhaserie_parser # Removido ou comentado
+# Importa a classe base se você tiver uma (opcional, mas bom para referência)
+# from .base_parser import BaseParser
+
+# Importa cada parser individualmente
+from .animefire_parser import AnimeFireParser
+from .animesonline_parser import AnimesOnlineParser # Adiciona o novo parser
+
+# Opcional: você pode definir __all__ para explicitar o que é exportado
+# __all__ = [
+#     "AnimeFireParser",
+# ]
