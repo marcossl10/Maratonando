@@ -1,35 +1,36 @@
 # /home/marcos/Maratonando/PKGBUILD
 
 pkgname=maratonando
-pkgver=1.1.1
-pkgrel=10
+pkgver=2.0.0
+pkgrel=1
 pkgdesc="Busca e assiste animes."
 arch=('any')
 url="https://github.com/marcossl10/Maratonando.git"
 license=('MIT')
 depends=(
     'python'
-    'tk'
+    'python-flet'         # Adicionado para a interface Flet
     'python-requests'
     'python-beautifulsoup4' # Para parsear HTML
     'python-click'          # Para CLI
-    'yt-dlp'                # Para baixar vídeos
+    'yt-dlp'                # Para baixar vídeos (usado por alguns parsers)
     'mpv'                   # Player de vídeo externo
 )
 makedepends=()
-source=()
-# Nenhum checksum necessário para fontes locais copiadas manualmente
-md5sums=()
+# O makepkg irá nomear o diretório fonte como $pkgname-$pkgver
+# Exemplo: maratonando-2.0.0
+source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/refs/tags/v${pkgver}.tar.gz"
+        "maratonando.desktop"
+        "maratonando.png::${url}/raw/main/icons/maratonando.png" # Assume que o ícone está em /icons no repo
+        "LICENSE::${url}/raw/main/LICENSE") # Assume que a licença está na raiz do repo
+sha256sums=('SKIP' # Para o tar.gz do código fonte, idealmente você geraria isso após o primeiro download
+            'SKIP' # Para maratonando.desktop local
+            'SKIP' # Para maratonando.png do repo
+            'SKIP') # Para LICENSE do repo
 
 prepare() {
-    # $startdir é o diretório onde o PKGBUILD está localizado
-    # $srcdir é o diretório de build temporário do makepkg
-    echo "Copiando fontes de $startdir para $srcdir..."
-    cp -r "$startdir/maratonando_src" "$srcdir/"
-    cp -r "$startdir/icons" "$srcdir/"
-    cp "$startdir/LICENSE" "$srcdir/"
-    cp "$startdir/maratonando.desktop" "$srcdir/"
-    echo "Conteúdo de $srcdir após prepare():"
+    cd "${srcdir}/${pkgname}-${pkgver}" # Entra no diretório do código fonte extraído
+    echo "Conteúdo de ${srcdir}/${pkgname}-${pkgver} após extração:"
     ls -lah "$srcdir"
 }
 
@@ -39,6 +40,7 @@ package() {
     _pythondir="${pkgdir}/usr/lib/python$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')/site-packages"
 
     install -d "${_pythondir}/${pkgname}/core/parsers"
+    # O diretório assets será criado ao copiar a pasta inteira abaixo
     install -d "${pkgdir}/usr/bin"
     install -d "${pkgdir}/usr/share/licenses/${pkgname}"
     install -d "${pkgdir}/usr/share/applications"
@@ -46,34 +48,39 @@ package() {
 
     # --- Verificação Essencial ---
     if [ ! -d "maratonando_src" ]; then
-        echo "ERRO: Diretório fonte '$srcdir/maratonando_src' não encontrado após prepare()!" >&2
-        echo "Conteúdo de $srcdir:" >&2
-        ls -lah "$srcdir" >&2
+        echo "ERRO: Diretório fonte 'maratonando_src' não encontrado em '${srcdir}/${pkgname}-${pkgver}'!" >&2
+        echo "Conteúdo de '${srcdir}/${pkgname}-${pkgver}':" >&2
+        ls -lah "${srcdir}/${pkgname}-${pkgver}" >&2
         return 1 # Falha o build
     fi
     # --- Fim Verificação ---
 
-    install -Dm644 maratonando_src/core/parsers/*.py "${_pythondir}/${pkgname}/core/parsers/"
-    install -Dm644 maratonando_src/core/*.py "${_pythondir}/${pkgname}/core/"
-    install -Dm644 maratonando_src/*.py "${_pythondir}/${pkgname}/"
+    # Instala o módulo Python
+    cp -r maratonando_src/* "${_pythondir}/${pkgname}/"
+    # Garante que o diretório assets exista se maratonando_src/assets estiver vazio mas existir
+    # ou se for copiado como um diretório vazio.
+    # Se maratonando_src/assets tiver conteúdo, o cp acima já o terá copiado.
+    # Esta linha é mais uma garantia.
+    install -d "${_pythondir}/${pkgname}/assets"
 
-    install -Dm644 "icons/maratonando.png" "${pkgdir}/usr/share/pixmaps/${pkgname}.png"
+    # Instala o ícone (baixado do repo ou local)
+    install -Dm644 "${srcdir}/maratonando.png" "${pkgdir}/usr/share/pixmaps/${pkgname}.png"
 
     _pythondir_runtime="/usr/lib/python$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')/site-packages" # Caminho real no sistema
     cat > "${pkgdir}/usr/bin/${pkgname}" <<EOF
 #!/bin/bash
 _PYTHON_PKG_DIR="${_pythondir_runtime}/${pkgname}"
-_GUI_FILE="\${_PYTHON_PKG_DIR}/gui.py"
+_FLET_GUI_FILE="\${_PYTHON_PKG_DIR}/flet_gui.py" # Caminho para a GUI Flet
 _CLI_FILE="\${_PYTHON_PKG_DIR}/cli.py"
 
-# Tenta chamar a GUI primeiro, se existir
-if [ -f "\${_GUI_FILE}" ]; then
-    python -m ${pkgname}.gui "\$@"
-# Senão, chama a CLI
+# Prioriza a GUI Flet, se existir
+if [ -f "\${_FLET_GUI_FILE}" ]; then
+    python -m ${pkgname}.flet_gui "\$@"
+# Fallback para a CLI, se nenhuma GUI existir
 elif [ -f "\${_CLI_FILE}" ]; then
     python -m ${pkgname}.cli "\$@"
 else
-    echo "Erro: Não foi possível encontrar o ponto de entrada (gui.py ou cli.py) para ${pkgname}." >&2
+    echo "Erro: Não foi possível encontrar um ponto de entrada válido (flet_gui.py, gui.py, ou cli.py) para ${pkgname}." >&2
     echo "Conteúdo de \${_PYTHON_PKG_DIR}:" >&2
     ls -lah "\${_PYTHON_PKG_DIR}" >&2
     exit 1
@@ -81,6 +88,7 @@ fi
 EOF
     chmod +x "${pkgdir}/usr/bin/${pkgname}"
 
-    install -Dm644 "LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
-    install -Dm644 "maratonando.desktop" "${pkgdir}/usr/share/applications/${pkgname}.desktop"
+    # Instala a licença (baixada do repo ou local)
+    install -Dm644 "${srcdir}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+    install -Dm644 "${srcdir}/maratonando.desktop" "${pkgdir}/usr/share/applications/${pkgname}.desktop"
 }
