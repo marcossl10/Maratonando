@@ -27,21 +27,21 @@ class FletAnimeApp:
         self.page.title = f"{APP_NAME} - v{APP_VERSION}"
         self.page.bgcolor = BG_COLOR
         self.page.theme_mode = ft.ThemeMode.DARK
-        self.page.window_width = 900
-        self.page.window_height = 700
-        self.page.window_min_width = 900
-        self.page.window_min_height = 600
+        self.page.window_width = 800
+        self.page.window_height = 600
+        self.page.window_min_width = 800
+        self.page.window_min_height = 500
 
         self.background_images = ["background1.png", "background2.png", "background3.png", "background4.png", "background5.png", "background6.png"]
-        self.background_cycle_interval = 8
+        self.background_cycle_interval = 10
         self.current_background_index = 0
 
         self.bg_image = ft.Image(
             src=self.background_images[self.current_background_index],
-            fit=ft.ImageFit.COVER,
+            fit=ft.ImageFit.FILL if len(self.background_images) > 1 else ft.ImageFit.CONTAIN,
             opacity=1.0,
             width=float("inf"),
-            height=330,
+            height=250,
             expand=False,
         )
 
@@ -660,7 +660,7 @@ class FletAnimeApp:
                 ft.Divider(height=20, color=ft.Colors.with_opacity(0.5, TEXT_COLOR)),
                 ft.Text(
                     "Me paga um café? PIX 83980601072",
-                    size=16,
+                    size=18,
                     color=ft.Colors.AMBER_ACCENT_700,
                     weight=ft.FontWeight.BOLD,
                     text_align=ft.TextAlign.CENTER
