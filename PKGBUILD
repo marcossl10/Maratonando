@@ -23,10 +23,10 @@ source=("${pkgname}-${pkgver}.tar.gz::${url%.git}/archive/refs/tags/v${pkgver}.t
         "maratonando.desktop"
         "maratonando.png::${url%.git}/raw/main/icons/maratonando.png" # Assume que o ícone está em /icons no repo
         "LICENSE::${url%.git}/raw/main/LICENSE") # Assume que a licença está na raiz do repo
-sha256sums=('SKIP' # Para o tar.gz do código fonte, idealmente você geraria isso após o primeiro download
-            'SKIP' # Para maratonando.desktop local
-            'SKIP' # Para maratonando.png do repo
-            'SKIP') # Para LICENSE do repo
+sha256sums=('431af37c850895bd89dc7b4eb663dff623df796820581e99651fa1adc135465c'
+            'c8fdc92dc2287224fe982af8ffba37c0d8418dd9ff06ede5e1ecd0be13718ed7'
+            '54b8f5958b72d9ebe5ff9bc58a608ca6ad21cad132f6d44f605d6208332365b4'
+            'dd6ab43eaab3d3190bc738b25981f07f5c3601712c3d2cbec7b7b0fe4701f04b')
 
 prepare() {
     # Navega para o diretório srcdir primeiro
