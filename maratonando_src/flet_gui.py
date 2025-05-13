@@ -27,10 +27,21 @@ class FletAnimeApp:
         self.page.title = f"{APP_NAME} - v{APP_VERSION}"
         self.page.bgcolor = BG_COLOR
         self.page.theme_mode = ft.ThemeMode.DARK
-        self.page.window_width = 800
-        self.page.window_height = 600
-        self.page.window_min_width = 800
-        self.page.window_min_height = 500
+
+        # Definindo as dimensões da janela
+        # É importante que: min_width <= initial_width <= max_width
+        # e min_height <= initial_height <= max_height
+
+        initial_width = 700
+        initial_height = 600
+
+        self.page.window_min_width = 600
+        self.page.window_min_height = 400
+        self.page.window_max_width = 1280
+        self.page.window_max_height = 720
+
+        self.page.window_width = initial_width
+        self.page.window_height = initial_height
 
         self.background_images = ["background1.png", "background2.png", "background3.png", "background4.png", "background5.png", "background6.png"]
         self.background_cycle_interval = 10
@@ -38,10 +49,10 @@ class FletAnimeApp:
 
         self.bg_image = ft.Image(
             src=self.background_images[self.current_background_index],
-            fit=ft.ImageFit.FILL if len(self.background_images) > 1 else ft.ImageFit.CONTAIN,
+            fit=ft.ImageFit.COVER,
             opacity=1.0,
             width=float("inf"),
-            height=250,
+            height=180,
             expand=False,
         )
 
