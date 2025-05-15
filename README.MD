@@ -19,7 +19,7 @@ Um aplicativo para buscar e assistir animes, feito em Python com a interface gr�
 
 Certifique-se de ter as seguintes dependências instaladas:
 
-*   **Para Rodar (com Flet):** `python`, `python-flet`, `python-requests`, `python-beautifulsoup4`, `python-click`, `yt-dlp`, `mpv`
+*   **Para Rodar (com CustomTkinter):** `python`, `python-customtkinter`, `python-pillow`, `python-requests`, `python-beautifulsoup4`, `python-click`, `yt-dlp`, `mpv`
 *   **Para Compilar o Pacote Arch (com `makepkg`):** `base-devel`, `git`
 
 As dependências de execução podem ser instaladas usando o gerenciador de pacotes do seu sistema.
