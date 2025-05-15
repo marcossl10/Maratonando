@@ -1,18 +1,18 @@
 # Maratonando
 
-Um aplicativo para buscar e assistir animes, feito em Python com a interface gráfica Flet e Linha de Comando (CLI).
+Um aplicativo para buscar e assistir animes, feito em Python com a interface gráfica CustomTkinter e Linha de Comando (CLI).
 
 ---
 
 ## Funcionalidades
 
 *   Busca de animes em diferentes fontes (atualmente AnimeFire e AnimesOnline).
-*   Interface gráfica moderna (Flet) e Linha de Comando (CLI).
+*   Interface gráfica moderna (CustomTkinter) e Linha de Comando (CLI).
 *   Seleção de servidor (fonte) na interface gráfica.
 *   Listagem de episódios.
 *   Obtenção de links diretos de vídeo.
 *   Reprodução de episódios usando o player MPV.
-
+*   Histórico de episódios assistidos.
 ---
 
 ## Dependências
@@ -20,11 +20,19 @@ Um aplicativo para buscar e assistir animes, feito em Python com a interface gr�
 Certifique-se de ter as seguintes dependências instaladas:
 
 *   **Para Rodar (com Flet):** `python`, `python-flet`, `python-requests`, `python-beautifulsoup4`, `python-click`, `yt-dlp`, `mpv`
-*   **Para Compilar (com `makepkg`):** `base-devel`, `git`
+*   **Para Compilar o Pacote Arch (com `makepkg`):** `base-devel`, `git`
 
-As dependências de execução podem ser instaladas usando o gerenciador de pacotes do seu sistema. O `python-flet` é geralmente encontrado no Arch User Repository (AUR). Você pode instalá-lo usando um auxiliar AUR como `yay` (ex: `yay -S python-flet`) ou `paru` (ex: `paru -S python-flet`).
+As dependências de execução podem ser instaladas usando o gerenciador de pacotes do seu sistema.
+Por exemplo, no Arch Linux e derivados:
+```bash
+sudo pacman -S python python-pillow python-requests python-beautifulsoup4 python-click yt-dlp mpv
+```
+A dependência `python-customtkinter` pode precisar ser instalada via pip se não estiver nos repositórios oficiais:
+```bash
+pip install customtkinter
+```
 
-O arquivo `PKGBUILD`, usado com o método de instalação recomendado `makepkg -si`, lista todas as dependências necessárias para a versão Flet. O comando `makepkg -si` deve tentar resolver e instalar estas dependências, incluindo pacotes do AUR como o `python-flet`, se o seu sistema estiver configurado com um auxiliar AUR ou se você o tiver pré-instalado.
+O arquivo `PKGBUILD` (para Arch Linux) lista todas as dependências necessárias e o comando `makepkg -si` tentará resolvê-las, incluindo `python-customtkinter` (que pode estar no AUR ou você pode precisar instalá-lo via pip antes, dependendo da sua configuração).
 
 ---
 
