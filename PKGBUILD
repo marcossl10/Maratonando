@@ -88,6 +88,9 @@ package() {
     install -Dm644 "${srcdir}/maratonando.png" "${pkgdir}/usr/share/pixmaps/${pkgname}.png"
 
     # Cria o script executável em /usr/bin
+    # Garante que o diretório de destino para o script exista
+    install -d "${pkgdir}/usr/bin"
+
     cat > "${pkgdir}/usr/bin/${pkgname}" <<EOF
 #!/usr/bin/env bash
 
@@ -112,4 +115,3 @@ EOF
     # Instala a licença
     install -Dm644 "LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
 }
-
