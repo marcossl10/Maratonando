@@ -1,41 +1,52 @@
-# /home/marcos/Maratonando/PKGBUILD
-
+# Maintainer: Marcos <marcosslprado@gmail.com>
 pkgname=maratonando
 pkgver=2.0.0
 pkgrel=1
 pkgdesc="Busca e assiste animes."
 arch=('any')
-url="https://github.com/marcossl10/Maratonando.git"
+url="https://github.com/marcossl10/Maratonando" # URL do projeto, não do git clone
 license=('MIT')
 depends=(
     'python'
-    'python-flet'         # Adicionado para a interface Flet
+    'python-customtkinter'  # Adicionado para a interface CustomTkinter
+    'python-pillow'         # Adicionado para tratamento de imagens (capas, ícones)
     'python-requests'
     'python-beautifulsoup4' # Para parsear HTML
     'python-click'          # Para CLI
     'yt-dlp'                # Para baixar vídeos (usado por alguns parsers)
     'mpv'                   # Player de vídeo externo
 )
+# makedepends geralmente lista pacotes necessários APENAS para o processo de build (ex: setuptools, wheel)
 makedepends=()
-# O makepkg irá nomear o diretório fonte como $pkgname-$pkgver
-# Exemplo: maratonando-2.0.0
-source=("${pkgname}-${pkgver}.tar.gz::${url%.git}/archive/refs/tags/v${pkgver}.tar.gz"
+# O makepkg irá nomear o diretório fonte como NomeDoRepo-Tag
+# Exemplo: Maratonando-2.0.0 ou Maratonando-v2.0.0
+source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/refs/tags/v${pkgver}.tar.gz"
         "maratonando.desktop"
-        "maratonando.png::${url%.git}/raw/main/icons/maratonando.png" # Assume que o ícone está em /icons no repo
-        "LICENSE::${url%.git}/raw/main/LICENSE") # Assume que a licença está na raiz do repo
+        "maratonando.png::${url}/raw/v${pkgver}/icons/maratonando.png" # Baixa da tag específica
+        "LICENSE::${url}/raw/v${pkgver}/LICENSE") # Baixa da tag específica
 sha256sums=('431af37c850895bd89dc7b4eb663dff623df796820581e99651fa1adc135465c'
             'c8fdc92dc2287224fe982af8ffba37c0d8418dd9ff06ede5e1ecd0be13718ed7'
             '54b8f5958b72d9ebe5ff9bc58a608ca6ad21cad132f6d44f605d6208332365b4'
             'dd6ab43eaab3d3190bc738b25981f07f5c3601712c3d2cbec7b7b0fe4701f04b')
+
 
 prepare() {
     # Navega para o diretório srcdir primeiro
     cd "${srcdir}"
     # Encontra o diretório extraído (deve haver apenas um após a extração do tarball)
     # e entra nele. O nome pode variar dependendo de como o GitHub nomeia o diretório raiz no tarball.
-    # Ex: Maratonando-2.0.0 ou Maratonando-v2.0.0
-    extracted_dir=$(ls -d */ | head -n 1 | sed 's/\///') # Pega o primeiro diretório e remove a barra final
-    cd "${extracted_dir}"
+    # Assumindo que o nome do diretório extraído é "Maratonando-${pkgver}" ou "Maratonando-v${pkgver}"
+    # A variável extracted_dir é usada para flexibilidade, caso o nome do diretório mude.
+    extracted_dir=$(ls -d Maratonando-${pkgver}/ 2>/dev/null || ls -d Maratonando-v${pkgver}/ 2>/dev/null || ls -d */ | head -n 1 | sed 's/\///')
+
+    if [ -z "${extracted_dir}" ] || [ ! -d "${extracted_dir}" ]; then
+        echo "ERRO: Diretório fonte extraído não encontrado em '$(pwd)'!" >&2
+        echo "Conteúdo de '$(pwd)':" >&2
+        ls -lah "$(pwd)" >&2
+        return 1 # Falha o build
+    fi
+    cd "${extracted_dir}" || return 1
+
     echo "Entrou em: $(pwd)"
     echo "Conteúdo de $(pwd) após extração:"
     ls -lah
@@ -43,65 +54,62 @@ prepare() {
 
 package() {
     # Navega para o diretório do código fonte extraído.
-    # O nome do diretório pode variar (ex: $pkgname-$pkgver ou o nome do repo com a tag).
-    # Esta lógica é similar à da função prepare().
-    cd "${srcdir}" # Garante que estamos em srcdir
-    extracted_dir=$(ls -d */ | head -n 1 | sed 's/\///') # Encontra o diretório extraído
-    cd "${extracted_dir}" # Entra no diretório extraído
+    # Usa a mesma lógica de `prepare()` para encontrar o diretório.
+    cd "${srcdir}"
+    extracted_dir=$(ls -d Maratonando-${pkgver}/ 2>/dev/null || ls -d Maratonando-v${pkgver}/ 2>/dev/null || ls -d */ | head -n 1 | sed 's/\///')
+
+    if [ -z "${extracted_dir}" ] || [ ! -d "${extracted_dir}" ]; then
+        echo "ERRO: Diretório fonte extraído não encontrado em '$(pwd)' durante package()!" >&2
+        return 1 # Falha o build
+    fi
+    cd "${extracted_dir}" || return 1
+
 
     _pythondir="${pkgdir}/usr/lib/python$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')/site-packages"
 
-    install -d "${_pythondir}/${pkgname}/core/parsers"
-    # O diretório assets será criado ao copiar a pasta inteira abaixo
-    install -d "${pkgdir}/usr/bin"
-    install -d "${pkgdir}/usr/share/licenses/${pkgname}"
-    install -d "${pkgdir}/usr/share/applications"
-    install -d "${pkgdir}/usr/share/pixmaps"
+    # Cria o diretório de destino para o módulo Python
+    install -d "${_pythondir}/${pkgname}"
 
     # --- Verificação Essencial ---
     if [ ! -d "maratonando_src" ]; then
-        # Since prepare() cd's into the extracted source, pwd is the extracted source dir
+        # Verifica se o diretório do módulo Python existe
         echo "ERRO: Diretório fonte 'maratonando_src' não encontrado em '$(pwd)'!" >&2
         echo "Conteúdo de '$(pwd)':" >&2
         ls -lah "$(pwd)" >&2
         return 1 # Falha o build
     fi
-    # --- Fim Verificação ---
 
     # Instala o módulo Python
     cp -r maratonando_src/* "${_pythondir}/${pkgname}/"
-    # Garante que o diretório assets exista se maratonando_src/assets estiver vazio mas existir
-    # ou se for copiado como um diretório vazio.
-    # Se maratonando_src/assets tiver conteúdo, o cp acima já o terá copiado.
-    # Esta linha é mais uma garantia.
-    install -d "${_pythondir}/${pkgname}/assets"
+    # O diretório assets e outros subdiretórios dentro de maratonando_src
+    # já são copiados pelo 'cp -r maratonando_src/*'.
 
     # Instala o ícone (baixado do repo ou local)
     install -Dm644 "${srcdir}/maratonando.png" "${pkgdir}/usr/share/pixmaps/${pkgname}.png"
 
-    _pythondir_runtime="/usr/lib/python$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')/site-packages" # Caminho real no sistema
+    # Cria o script executável em /usr/bin
     cat > "${pkgdir}/usr/bin/${pkgname}" <<EOF
-#!/bin/bash
-_PYTHON_PKG_DIR="${_pythondir_runtime}/${pkgname}"
-_FLET_GUI_FILE="\${_PYTHON_PKG_DIR}/flet_gui.py" # Caminho para a GUI Flet
-_CLI_FILE="\${_PYTHON_PKG_DIR}/cli.py"
+#!/usr/bin/env bash
 
-# Prioriza a GUI Flet, se existir
-if [ -f "\${_FLET_GUI_FILE}" ]; then
-    python -m ${pkgname}.flet_gui "\$@"
-# Fallback para a CLI, se nenhuma GUI existir
-elif [ -f "\${_CLI_FILE}" ]; then
-    python -m ${pkgname}.cli "\$@"
+# Executa a GUI CustomTkinter
+# Verifica se o módulo principal da GUI existe antes de tentar executar
+if python -c "import ${pkgname}.gui" &> /dev/null; then
+    python -m ${pkgname}.gui "\$@" # Executa a GUI CustomTkinter
 else
-    echo "Erro: Não foi possível encontrar um ponto de entrada válido (flet_gui.py, gui.py, ou cli.py) para ${pkgname}." >&2
-    echo "Conteúdo de \${_PYTHON_PKG_DIR}:" >&2
+    echo "Erro: Não foi possível encontrar o ponto de entrada da GUI (${pkgname}.gui)." >&2
+    _pythondir_runtime="/usr/lib/python$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')/site-packages"
+    _PYTHON_PKG_DIR="\${_pythondir_runtime}/${pkgname}"
+    echo "Verifique o conteúdo de \${_PYTHON_PKG_DIR}:" >&2
     ls -lah "\${_PYTHON_PKG_DIR}" >&2
     exit 1
 fi
 EOF
     chmod +x "${pkgdir}/usr/bin/${pkgname}"
 
-    # Instala a licença (baixada do repo ou local)
-    install -Dm644 "${srcdir}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
-    install -Dm644 "${srcdir}/maratonando.desktop" "${pkgdir}/usr/share/applications/${pkgname}.desktop"
+    # Instala o arquivo .desktop
+    install -Dm644 "${srcdir}/${pkgname}.desktop" "${pkgdir}/usr/share/applications/${pkgname}.desktop"
+
+    # Instala a licença
+    install -Dm644 "LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
 }
+
