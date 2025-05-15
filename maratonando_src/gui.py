@@ -18,7 +18,7 @@ from io import BytesIO
 import requests
 from PIL import Image, ImageTk, ImageFont, ImageDraw # Adicionado ImageDraw
 
-from .core.parsers import AnimeFireParser, AnimesOnlineParser
+from .core.parsers import AnimeFireParser, AnimesOnlineParser # Mantido
 from .core.player import ExternalMediaPlayer
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')

@@ -94,18 +94,9 @@ package() {
     cat > "${pkgdir}/usr/bin/${pkgname}" <<EOF
 #!/usr/bin/env bash
 
-# Executa a GUI CustomTkinter
-# Verifica se o módulo principal da GUI existe antes de tentar executar
-if python -c "import ${pkgname}.gui" &> /dev/null; then
-    python -m ${pkgname}.gui "\$@" # Executa a GUI CustomTkinter
-else
-    echo "Erro: Não foi possível encontrar o ponto de entrada da GUI (${pkgname}.gui)." >&2
-    _pythondir_runtime="/usr/lib/python$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')/site-packages"
-    _PYTHON_PKG_DIR="\${_pythondir_runtime}/${pkgname}"
-    echo "Verifique o conteúdo de \${_PYTHON_PKG_DIR}:" >&2
-    ls -lah "\${_PYTHON_PKG_DIR}" >&2
-    exit 1
-fi
+# Executa o módulo da GUI CustomTkinter
+# Se o módulo ou suas dependências não forem encontrados, 'python -m' lidará com o erro.
+exec python -m ${pkgname}.gui "\$@"
 EOF
     chmod +x "${pkgdir}/usr/bin/${pkgname}"
 
