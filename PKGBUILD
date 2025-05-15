@@ -24,7 +24,7 @@ source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/refs/tags/v${pkgver}.tar.gz
         "maratonando.desktop"
         "maratonando.png::${url}/raw/v${pkgver}/icons/maratonando.png" # Baixa da tag específica
         "LICENSE::${url}/raw/v${pkgver}/LICENSE") # Baixa da tag específica
-sha256sums=('431af37c850895bd89dc7b4eb663dff623df796820581e99651fa1adc135465c'
+sha256sums=('619b051a07a99b96838b66b19ade8b4cfd76bf189cc447aa3c0f561c62949154'
             'c8fdc92dc2287224fe982af8ffba37c0d8418dd9ff06ede5e1ecd0be13718ed7'
             '54b8f5958b72d9ebe5ff9bc58a608ca6ad21cad132f6d44f605d6208332365b4'
             'dd6ab43eaab3d3190bc738b25981f07f5c3601712c3d2cbec7b7b0fe4701f04b')
