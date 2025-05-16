@@ -11,12 +11,12 @@ import time
 import math
 import re
 from pathlib import Path
-import hashlib # Adicionado para gerar nomes de arquivo para o cache
+import hashlib 
 import sys
 import logging
 from io import BytesIO
 import requests
-from PIL import Image, ImageTk, ImageFont, ImageDraw # Adicionado ImageDraw
+from PIL import Image, ImageTk, ImageFont, ImageDraw 
 
 from .core.parsers import AnimeFireParser, AnimesOnlineParser
 from .core.player import ExternalMediaPlayer
@@ -43,11 +43,11 @@ class AnimeApp:
         self.logo_cycle_interval = 10
         self.current_logo_index = 0
 
-        initial_width = 701
+        initial_width = 700
         initial_height = 850
-        min_width = 701
+        min_width = 700
         min_height = 850
-        max_width = 701
+        max_width = 700
         max_height = 850
 
         self.root.geometry(f"{initial_width}x{initial_height}")
