@@ -1,0 +1,4 @@
+recursive-include icons *
+recursive-include scripts *
+recursive-include maratonando_src/customtkinter *
+recursive-include maratonando_src/darkdetect *

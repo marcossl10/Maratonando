@@ -1,6 +1,6 @@
 # /home/marcos/Maratonando/maratonando_src/gui.py
-
-import customtkinter as ctk
+ # Importação original que causa o ModuleNotFoundError quando embutido
+from maratonando_src import customtkinter as ctk # Importação corrigida
 import tkinter.messagebox as messagebox
 import tkinter.simpledialog as simpledialog
 import subprocess
@@ -320,7 +320,7 @@ class AnimeApp:
                         size_to_resize = (new_width if new_width > 0 else 1, new_height if new_height > 0 else 1)
                     else:
                         size_to_resize = size
-                    pil_image = img_pil_orig.resize(size_to_resize, Image.Resampling.LANCZOS)
+                    pil_image = img_pil_orig.resize(size_to_resize, Image.LANCZOS)
                 else:
                     logging.warning(f"Arquivo de ícone não encontrado: {icon_path}")
             
@@ -798,7 +798,7 @@ class AnimeApp:
                 new_width = max(1, new_width)
                 new_height = max(1, new_height)
 
-                img_resized = original_img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+                img_resized = original_img.resize((new_width, new_height), Image.LANCZOS)
                 ctk_image = ctk.CTkImage(light_image=img_resized, dark_image=img_resized, size=(new_width, new_height))
                 if target_label.winfo_exists():
                     self.root.after(0, lambda: target_label.configure(image=ctk_image, text=""))
@@ -857,7 +857,7 @@ class AnimeApp:
                 scaled_w = max(1, scaled_w)
                 scaled_h = max(1, scaled_h)
 
-                img_resized_content = original_img.resize((scaled_w, scaled_h), Image.Resampling.LANCZOS)
+                img_resized_content = original_img.resize((scaled_w, scaled_h), Image.LANCZOS)
                 paste_x = (target_w - scaled_w) // 2
                 paste_y = (target_h - scaled_h) // 2
                 final_img_obj.paste(img_resized_content, (paste_x, paste_y))
@@ -1261,7 +1261,11 @@ class AnimeApp:
              self.root.after(0, self._re_enable_episode_selection)
 
 
-if __name__ == "__main__":
+# Adicione esta função para encapsular a inicialização da GUI
+def main_gui_func():
     root = ctk.CTk()
     app = AnimeApp(root)
     root.mainloop()
+
+if __name__ == "__main__":
+    main_gui_func() # Chame a nova função

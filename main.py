@@ -2,22 +2,21 @@
 import logging
 import sys
 
+# Importa a função principal da CLI do seu pacote
 from maratonando_src.cli import cli
-from animesonline_parser import extrair_animes_animesonline
+# Importa a função principal da GUI do seu pacote
+from maratonando_src.gui import main_gui_func
 
 logging.basicConfig(level=logging.INFO,
                     format='[%(asctime)s] [%(levelname)s] [%(name)s] %(message)s',
                     stream=sys.stderr)
 
-def mostrar_animes_online():
-    """Função de exemplo/teste para extrair animes de um parser local."""
-    logging.info("Executando extração de teste de 'animesonline_parser.py' local...")
-    animes = extrair_animes_animesonline()
-    for anime in animes:
-        print(anime["titulo"], anime["link"])
-    logging.info("Extração de teste concluída.")
-
 if __name__ == "__main__":
-    # mostrar_animes_online()
-
-    cli()
+    # Verifica se foram passados argumentos de linha de comando além do nome do script
+    if len(sys.argv) > 1:
+        # Se houver argumentos, assume que é para a CLI e deixa o Click gerenciá-los
+        cli()
+    else:
+        # Se nenhum argumento for fornecido, inicia a interface gráfica
+        logging.info("Nenhum argumento CLI fornecido. Iniciando a interface gráfica...")
+        main_gui_func()

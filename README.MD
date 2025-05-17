@@ -1,10 +1,19 @@
 # Maratonando
 
-Um aplicativo para buscar e assistir animes, feito em Python com a interface gráfica CustomTkinter e Linha de Comando (CLI).
+**Um aplicativo para buscar e assistir animes, filmes e séries diretamente do seu desktop Linux, feito em Python com a interface gráfica CustomTkinter e Linha de Comando (CLI).**
+
+---
+
+## Status do Projeto
+
+Em desenvolvimento ativo. <!-- Ou "Estável", "Beta", etc. -->
 
 ---
 
 ## Funcionalidades
+
+<!-- (Opcional) Adicione aqui capturas de tela da sua GUI.
+![Captura de Tela da GUI Principal](link_para_sua_imagem.png) -->
 
 *   Busca de animes em diferentes fontes (atualmente AnimeFire e AnimesOnline).
 *   Interface gráfica moderna (CustomTkinter) e Linha de Comando (CLI).
@@ -17,13 +26,19 @@ Um aplicativo para buscar e assistir animes, feito em Python com a interface gr�
 
 ## Dependências
 
-Certifique-se de ter as seguintes dependências instaladas:
+Para o correto funcionamento do Maratonando, as seguintes dependências são necessárias:
 
-*   **Para Rodar (com CustomTkinter):** `python`, `python-customtkinter`, `python-pillow`, `python-requests`, `python-beautifulsoup4`, `python-click`, `yt-dlp`, `mpv`
-*   **Para Compilar o Pacote Arch (com `makepkg`):** `base-devel`, `git`
+*   **Python 3** (geralmente 3.7 ou superior)
+*   **Pillow (python-pillow):** Para manipulação de imagens.
+*   **Requests (python-requests):** Para requisições HTTP.
+*   **Beautiful Soup 4 (python-beautifulsoup4):** Para parsing de HTML.
+*   **Click (python-click):** Para a interface de linha de comando (CLI).
+*   **yt-dlp:** Para extrair informações de vídeo de diversas fontes.
+*   **mpv:** Player de mídia utilizado para reprodução.
+*   **CustomTkinter (python-customtkinter):** Para a interface gráfica.
 
 As dependências de execução podem ser instaladas usando o gerenciador de pacotes do seu sistema.
-Por exemplo, no Arch Linux e derivados:
+No **Arch Linux e derivados**, você pode instalar a maioria delas com:
 ```bash
 sudo pacman -S python python-pillow python-requests python-beautifulsoup4 python-click yt-dlp mpv
 ```
