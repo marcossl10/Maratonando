@@ -185,85 +185,36 @@ class AnimesOnlineParser:
             response.raise_for_status()
             soup = BeautifulSoup(response.text, "html.parser")
 
-            player_options = soup.select("ul#playeroptionsul li.dooplay_player_option")
+            # A nova estrutura do site usa iframes diretamente, não mais chamadas AJAX complexas.
+            # A lógica foi simplificada para extrair a URL do player para cada opção.
+            player_options = soup.select("ul#playeroptionsul > li[data-post][data-nume][data-type]")
             log.debug(f"[AnimesOnline] Encontradas {len(player_options)} opções de player.")
 
             for option_li in player_options:
                 option_label = option_li.select_one("span.title").get_text(strip=True) if option_li.select_one("span.title") else "Player"
                 data_nume = option_li.get("data-nume")
                 data_post = option_li.get("data-post")
-                data_type = option_li.get("data-type")
+                data_type = option_li.get("data-type") # Geralmente 'video'
 
-                if not all([data_nume, data_post, data_type]):
-                    log.warning(f"[AnimesOnline] Opção de player '{option_label}' sem atributos data necessários. Pulando.")
-                    continue
-
-                embed_url_from_api = None
-
-                rest_api_url = urljoin(BASE_URL_ANIMESONLINE, f"wp-json/dooplayer/v2/{data_post}/{data_type}/{data_nume}")
-                log.debug(f"[AnimesOnline] Tentativa 1: Fazendo requisição GET para API REST: {rest_api_url} para '{option_label}'")
-                try:
-                    rest_response = requests.get(rest_api_url, headers=HTTP_HEADERS_ANIMESONLINE, timeout=15)
-                    if rest_response.status_code == 200:
-                        rest_data = rest_response.json()
-                        embed_url_from_api = rest_data.get("embed_url")
-                        if embed_url_from_api:
-                            log.info(f"[AnimesOnline] Tentativa 1 SUCESSO: 'embed_url' obtida via API REST para '{option_label}': {embed_url_from_api}")
-                        else:
-                            log.warning(f"[AnimesOnline] Tentativa 1: API REST retornou JSON, mas sem 'embed_url' para '{option_label}'.")
-                    else:
-                        log.warning(f"[AnimesOnline] Tentativa 1 FALHA: API REST retornou status {rest_response.status_code} para '{option_label}'.")
-                except requests.exceptions.RequestException as rest_req_err:
-                    log.error(f"[AnimesOnline] Tentativa 1 ERRO: Erro na requisição para API REST para '{option_label}': {rest_req_err}")
-                except ValueError as rest_json_err:
-                    log.error(f"[AnimesOnline] Tentativa 1 ERRO: Erro ao decodificar JSON da API REST para '{option_label}': {rest_json_err}. Resposta: {rest_response.text[:200]}")
-
-                if not embed_url_from_api:
-                    log.debug(f"[AnimesOnline] Tentativa 2: Recorrendo à chamada AJAX POST para '{option_label}'")
-                    ajax_url = urljoin(BASE_URL_ANIMESONLINE, "wp-admin/admin-ajax.php")
-                    payload = {
-                        'action': 'dooplay_player_ajax',
-                        'post': data_post,
-                        'nume': data_nume,
-                        'type': data_type
-                    }
-                    log.debug(f"[AnimesOnline] Fazendo requisição AJAX POST para '{option_label}' com payload: {payload}")
-                    try:
-                        ajax_response = requests.post(ajax_url, data=payload, headers=HTTP_HEADERS_ANIMESONLINE, timeout=15)
-                        ajax_response.raise_for_status()
-                        ajax_data = ajax_response.json()
-                        embed_url_from_api = ajax_data.get("embed_url")
-                        if embed_url_from_api:
-                            log.info(f"[AnimesOnline] Tentativa 2 SUCESSO: 'embed_url' obtida via AJAX POST para '{option_label}': {embed_url_from_api}")
-                        else:
-                            log.warning(f"[AnimesOnline] Tentativa 2: AJAX POST retornou JSON, mas sem 'embed_url' para '{option_label}'.")
-                    except requests.exceptions.RequestException as req_err:
-                        log.error(f"[AnimesOnline] Tentativa 2 ERRO: Erro na requisição AJAX POST para '{option_label}': {req_err}")
-                    except ValueError as json_err:
-                        log.error(f"[AnimesOnline] Tentativa 2 ERRO: Erro ao decodificar JSON da AJAX POST para '{option_label}': {json_err}. Resposta: {ajax_response.text[:200]}")
-
-                if embed_url_from_api:
-                    parsed_player_url = urlparse(embed_url_from_api)
-                    query_params_player = parse_qs(parsed_player_url.query)
-
-                    if 'source' in query_params_player and query_params_player['source']:
-                        direct_video_url = query_params_player['source'][0]
-                        log.info(f"[AnimesOnline] Link direto encontrado para '{option_label}': {direct_video_url}")
-                        video_sources.append({'label': option_label, 'src': direct_video_url})
-                    else:
-                        log.warning(f"[AnimesOnline] Parâmetro 'source' não encontrado na URL do player '{embed_url_from_api}' para '{option_label}'. Adicionando URL do player como fallback.")
-                        video_sources.append({'label': f"{option_label} (Player Page)", 'src': embed_url_from_api})
+                # O site agora usa uma URL de player interno padronizada
+                if data_post and data_nume and data_type:
+                    # Monta a URL do iframe do player diretamente
+                    player_iframe_url = f"{BASE_URL_ANIMESONLINE}player-interno/?tipo={data_type}&post={data_post}&nume={data_nume}"
+                    log.info(f"[AnimesOnline] URL do player construída para '{option_label}': {player_iframe_url}")
+                    
+                    # Adicionamos a URL do iframe. O player de vídeo da GUI deverá ser capaz de renderizá-la.
+                    video_sources.append({'label': option_label, 'src': player_iframe_url})
                 else:
-                    log.warning(f"[AnimesOnline] Nenhuma 'embed_url' obtida para '{option_label}' após todas as tentativas.")
+                    log.warning(f"[AnimesOnline] Atributos data incompletos para a opção de player '{option_label}'. Pulando.")
+                    continue
 
         except requests.exceptions.RequestException as e:
             log.error(f"[AnimesOnline] Erro de rede ao buscar fontes de vídeo ({episode_page_url}): {e}")
         except Exception as e:
             log.error(f"[AnimesOnline] Erro inesperado ao buscar fontes de vídeo ({episode_page_url}): {e}", exc_info=True)
         
-        if not video_sources:
-            log.warning(f"[AnimesOnline] Nenhuma fonte de vídeo encontrada para {episode_page_url} pela estratégia principal.")
-
         if video_sources:
             log.info(f"[AnimesOnline] Fontes de vídeo encontradas para {episode_page_url}: {video_sources}")
+        else:
+            log.warning(f"[AnimesOnline] Nenhuma fonte de vídeo encontrada para {episode_page_url}.")
         return video_sources
