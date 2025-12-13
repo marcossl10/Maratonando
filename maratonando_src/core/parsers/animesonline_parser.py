@@ -7,7 +7,7 @@ import re
 
 log = logging.getLogger(__name__)
 
-BASE_URL_ANIMESONLINE = "https://animesonline.cloud/"
+BASE_URL_ANIMESONLINE = "https://animesonlinecc.to/"
 HTTP_HEADERS_ANIMESONLINE = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
     "Referer": BASE_URL_ANIMESONLINE,
@@ -20,7 +20,7 @@ class AnimesOnlineParser:
 
     def search(self, query: str) -> List[Dict[str, str]]:
         """
-        Busca por animes no animesonline.cloud usando a query fornecida.
+        Busca por animes no animesonlinecc.to usando a query fornecida.
         """
         if not query:
             log.warning("[AnimesOnline] Query de busca vazia recebida.")
@@ -110,7 +110,9 @@ class AnimesOnlineParser:
                 for p_tag in synopsis_container.select('p'):
                     p_text = p_tag.get_text(strip=True)
                     if p_text.lower().startswith('sinopse:'):
-                        details['synopsis'] = p_text.replace('Sinopse:', '', 1).strip()
+                        # Garante que a sinopse não seja vazia após o replace
+                        synopsis_text = p_text.replace('Sinopse:', '', 1).strip()
+                        details['synopsis'] = synopsis_text if synopsis_text else "Sinopse não disponível."
                         break
             else:
                 log.debug(f"[AnimesOnline] Container de sinopse ('div.extra div.wp-content') não encontrado para {anime_url}")
@@ -246,7 +248,7 @@ class AnimesOnlineParser:
 
                     if 'source' in query_params_player and query_params_player['source']:
                         direct_video_url = query_params_player['source'][0]
-                        log.info(f"[AnimesOnline] Link direto encontrado no parâmetro 'source' da URL do player para '{option_label}': {direct_video_url}")
+                        log.info(f"[AnimesOnline] Link direto encontrado para '{option_label}': {direct_video_url}")
                         video_sources.append({'label': option_label, 'src': direct_video_url})
                     else:
                         log.warning(f"[AnimesOnline] Parâmetro 'source' não encontrado na URL do player '{embed_url_from_api}' para '{option_label}'. Adicionando URL do player como fallback.")
