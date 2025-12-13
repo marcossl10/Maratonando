@@ -18,7 +18,7 @@ from io import BytesIO
 import requests
 from PIL import Image, ImageTk, ImageFont, ImageDraw 
 
-from .core.parsers import AnimeFireParser, AnimesOnlineParser
+from .core.parsers import AnimeFireParser, MinhaSerieParser
 from .core.player import ExternalMediaPlayer
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -99,10 +99,10 @@ class AnimeApp:
             self.server_icon_label = ctk.CTkLabel(self.search_bar_frame, image=self.server_icon_ctk, text="")
             self.server_icon_label.pack(side="left", padx=(0, 2))
 
-        self.internal_to_display_parser_names = {"AnimesOnline": "Servidor 2", "AnimeFire": "Servidor 1"}
+        self.internal_to_display_parser_names = {"MinhaSerie": "Servidor 2", "AnimeFire": "Servidor 1"}
         self.display_to_internal_parser_names = {v: k for k, v in self.internal_to_display_parser_names.items()}
-        self.parsers = {"AnimesOnline": AnimesOnlineParser(), "AnimeFire": AnimeFireParser()}
-        self.active_parser_name = "AnimesOnline"
+        self.parsers = {"MinhaSerie": MinhaSerieParser(), "AnimeFire": AnimeFireParser()}
+        self.active_parser_name = "MinhaSerie"
         self.active_parser = self.parsers[self.active_parser_name]
         active_display_parser_name = self.internal_to_display_parser_names.get(self.active_parser_name, self.active_parser_name)
 
