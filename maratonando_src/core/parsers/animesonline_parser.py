@@ -97,37 +97,23 @@ class MinhaSerieParser:
             else:
                 log.debug(f"[MinhaSerie] Container de sinopse ('div.synopsis p') não encontrado para {anime_url}")
 
-            # O site carrega os episódios via AJAX. Precisamos simular essa chamada.
-            tmdb_id_tag = soup.select_one('div[data-tmdb-id]')
-            if tmdb_id_tag and tmdb_id_tag.get('data-tmdb-id'):
-                tmdb_id = tmdb_id_tag['data-tmdb-id']
-                log.info(f"[MinhaSerie] Encontrado TMDB ID: {tmdb_id}. Buscando episódios via AJAX.")
-                
-                ajax_url = urljoin(BASE_URL_MINHASERIE, "ajax/seasons/episodes/")
-                post_data = {'tmdb': tmdb_id}
-                
-                try:
-                    ajax_response = requests.post(ajax_url, headers=HTTP_HEADERS_MINHASERIE, data=post_data, timeout=20)
-                    ajax_response.raise_for_status()
-                    episodes_html = ajax_response.json().get('episodes', '')
-                    
-                    if episodes_html:
-                        episodes_soup = BeautifulSoup(episodes_html, 'html.parser')
-                        episode_list_items = episodes_soup.select('a.episode-card')
-                        
-                        for ep_link in episode_list_items:
-                            ep_url = ep_link.get('href')
-                            ep_title_tag = ep_link.select_one('h3.episode-title')
-                            ep_title = ep_title_tag.get_text(strip=True) if ep_title_tag else "Episódio"
-                            if ep_url and ep_title:
-                                details['episodes'].append({'title': ep_title, 'url': urljoin(BASE_URL_MINHASERIE, ep_url)})
+            # A estrutura correta para os episódios é 'section.episodes-modern-section div.episodes-modern-item'
+            episode_list_items = soup.select('section.episodes-modern-section div.episodes-modern-item')
+            log.info(f"[MinhaSerie] Encontrados {len(episode_list_items)} itens de episódio com o seletor 'div.episodes-modern-item'.")
+
+            if episode_list_items:
+                for ep_item in episode_list_items:
+                    link_tag = ep_item.select_one('a.episodes-modern-download-btn')
+                    title_tag = ep_item.select_one('h3.episodes-modern-item-title')
+
+                    if link_tag and title_tag and link_tag.get('href'):
+                        ep_url = link_tag['href']
+                        ep_title = title_tag.get_text(strip=True)
+                        details['episodes'].append({'title': ep_title, 'url': urljoin(BASE_URL_MINHASERIE, ep_url)})
                     else:
-                        log.warning("[MinhaSerie] Resposta AJAX para episódios veio vazia.")
-                    
-                except Exception as ajax_e:
-                    log.error(f"[MinhaSerie] Erro ao fazer requisição AJAX para episódios: {ajax_e}")
+                        log.warning("[MinhaSerie] Item de episódio encontrado, mas sem link ou título.")
             else:
-                log.warning("[MinhaSerie] Não foi possível encontrar o TMDB ID na página para buscar episódios via AJAX.")
+                log.warning("[MinhaSerie] Seletor 'section.episodes-modern-section div.episodes-modern-item' não encontrou episódios.")
 
             if not details['episodes']:
                 log.warning(f"[MinhaSerie] Nenhum episódio encontrado para {anime_url} após verificar temporadas e página principal.")
