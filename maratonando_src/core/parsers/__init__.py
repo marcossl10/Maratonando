@@ -5,9 +5,3 @@
 
 # Importa cada parser individualmente
 from .animefire_parser import AnimeFireParser
-from .animesonline_parser import MinhaSerieParser # Adiciona o novo parser
-
-# Opcional: você pode definir __all__ para explicitar o que é exportado
-# __all__ = [
-#     "AnimeFireParser",
-# ]

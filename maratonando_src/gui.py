@@ -18,7 +18,7 @@ from io import BytesIO
 import requests
 from PIL import Image, ImageTk, ImageFont, ImageDraw 
 
-from .core.parsers import AnimeFireParser, MinhaSerieParser
+from .core.parsers import AnimeFireParser
 from .core.player import ExternalMediaPlayer
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -63,7 +63,6 @@ class AnimeApp:
         self.next_icon_ctk = self._load_icon_ctk("next.png")
         self.about_icon_ctk = self._load_icon_ctk("information.png")
         self.favorite_icon_ctk = self._load_icon_ctk("heart.png")
-        self.server_icon_ctk = self._load_icon_ctk("server.png")
         self.episodes_icon_ctk = self._load_icon_ctk("ep_icon.png", placeholder_text="EP")
         self.refresh_icon_ctk = self._load_icon_ctk("sync.png", placeholder_text="↻")
     
@@ -95,24 +94,9 @@ class AnimeApp:
         self.search_bar_frame = ctk.CTkFrame(self.main_app_frame, fg_color="transparent")
         self.search_bar_frame.pack(fill="x", pady=5, padx=10)
 
-        if self.server_icon_ctk:
-            self.server_icon_label = ctk.CTkLabel(self.search_bar_frame, image=self.server_icon_ctk, text="")
-            self.server_icon_label.pack(side="left", padx=(0, 2))
-
-        self.internal_to_display_parser_names = {"MinhaSerie": "Servidor 2", "AnimeFire": "Servidor 1"}
-        self.display_to_internal_parser_names = {v: k for k, v in self.internal_to_display_parser_names.items()}
-        self.parsers = {"MinhaSerie": MinhaSerieParser(), "AnimeFire": AnimeFireParser()}
-        self.active_parser_name = "MinhaSerie"
-        self.active_parser = self.parsers[self.active_parser_name]
-        active_display_parser_name = self.internal_to_display_parser_names.get(self.active_parser_name, self.active_parser_name)
-
-        self.parser_var = ctk.StringVar(value=active_display_parser_name)
-        self.parser_selector = ctk.CTkComboBox(
-            self.search_bar_frame, variable=self.parser_var,
-            values=list(self.display_to_internal_parser_names.keys()),
-            state="readonly", width=150, command=self.on_parser_change
-        )
-        self.parser_selector.pack(side="left", padx=(0, 10))
+        # --- Lógica do Parser Simplificada ---
+        self.active_parser = AnimeFireParser()
+        self.active_parser_name = "AnimeFire" # Nome interno para o histórico
 
         self.search_entry = ctk.CTkEntry(self.search_bar_frame, placeholder_text="Buscar anime...")
         self.search_entry.pack(side="left", expand=True, fill="x", padx=(0,5))
@@ -431,7 +415,6 @@ class AnimeApp:
         self.search_entry.configure(state=state)
         self.search_button_action.configure(state=state)
         self.clear_button_action.configure(state=state)
-        self.parser_selector.configure(state=state if state == "normal" else "disabled") 
 
         history_button_state = state
         if hasattr(self, 'refresh_history_button'): self.refresh_history_button.configure(state=history_button_state)
@@ -713,23 +696,6 @@ class AnimeApp:
         if self.current_search_page < total_pages:
             self.current_search_page += 1
             self.update_search_results_display()
-
-
-    def on_parser_change(self, choice=None): 
-        selected_display_name = self.parser_var.get()
-        internal_parser_name = self.display_to_internal_parser_names.get(selected_display_name)
-        if internal_parser_name and internal_parser_name in self.parsers:
-            if self.active_parser_name != internal_parser_name:
-                self.active_parser_name = internal_parser_name
-                self.active_parser = self.parsers[internal_parser_name]
-                logging.info(f"Parser interno: {self.active_parser_name}")
-                self.update_status(f"Servidor: {selected_display_name}")
-                self.clear_search_results()
-        else:
-            logging.error(f"Servidor desconhecido: {selected_display_name}")
-            messagebox.showerror("Erro", f"Servidor '{selected_display_name}' não reconhecido.", parent=self.root)
-            active_display_name = self.internal_to_display_parser_names.get(self.active_parser_name, self.active_parser_name)
-            self.parser_var.set(active_display_name)
 
 
     def update_anime_cover_ctk(self, image_url, anime_title_text="Selecione um anime"):
@@ -1098,6 +1064,10 @@ class AnimeApp:
             self.target_episode_url_from_history = None
             return
 
+        # Apenas o parser AnimeFire é suportado agora
+        if parser_from_history != "AnimeFire":
+            messagebox.showwarning("Servidor Indisponível", f"O item do histórico foi assistido em um servidor ('{parser_from_history}') que não está mais ativo. A busca será feita no servidor padrão.", parent=self.root)
+        
         self.selected_anime_title = anime_title_from_history
         self.selected_anime_url_for_history = anime_url_from_history
 
@@ -1106,14 +1076,8 @@ class AnimeApp:
         self.search_entry.delete(0, "end")
         self.search_entry.insert(0, cleaned_title_for_search)
 
-        if self.active_parser_name != parser_from_history and parser_from_history in self.internal_to_display_parser_names:
-            logging.info(f"Histórico: Mudando parser de '{self.active_parser_name}' para '{parser_from_history}'")
-            display_name_for_history_parser = self.internal_to_display_parser_names[parser_from_history]
-            self.parser_var.set(display_name_for_history_parser) 
-            self.root.after(150, self.start_search_thread) 
-        else:
-            logging.info(f"Histórico: Parser '{parser_from_history}' já ativo ou não reconhecido. Buscando diretamente.")
-            self.start_search_thread()
+        logging.info(f"Histórico: Buscando diretamente com o parser padrão.")
+        self.start_search_thread()
 
 
     def _clean_title_for_search(self, title):
