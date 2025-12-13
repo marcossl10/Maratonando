@@ -28,7 +28,7 @@ class MinhaSerieParser:
         # Voltando para o método GET com a URL de busca correta.
         # O problema anterior era o header "X-Requested-With", que foi removido.
         search_term_encoded = quote(query)
-        target_url = urljoin(BASE_URL_ANIMESONLINE, f"search/{search_term_encoded}")
+        target_url = urljoin(BASE_URL_MINHASERIE, f"search/{search_term_encoded}")
         
         log.info(f"[MinhaSerie] Buscando por query: '{query}' em {target_url}")
         results = []
@@ -50,7 +50,7 @@ class MinhaSerieParser:
 
                 img_tag = item_container.select_one('div.image img')
                 img_src = (img_tag.get('data-src') or img_tag.get('src')) if img_tag else None
-                img_src_absolute = urljoin(BASE_URL_ANIMESONLINE, img_src) if img_src and not img_src.startswith('http') else img_src
+                img_src_absolute = urljoin(BASE_URL_MINHASERIE, img_src) if img_src and not img_src.startswith('http') else img_src
 
                 year_tag = item_container.select_one('div.details div.meta span.year')
                 year = year_tag.get_text(strip=True) if year_tag else ""
