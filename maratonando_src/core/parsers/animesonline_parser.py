@@ -97,38 +97,37 @@ class MinhaSerieParser:
             else:
                 log.debug(f"[MinhaSerie] Container de sinopse ('div.synopsis p') não encontrado para {anime_url}")
 
-            # O site organiza episódios por temporadas, em páginas separadas.
-            season_links = soup.select('div.season-list a.season-item')
-            if season_links:
-                log.info(f"[MinhaSerie] Encontradas {len(season_links)} temporadas. Buscando episódios em cada uma.")
-                for season_link in season_links:
-                    season_url = season_link.get('href')
-                    if not season_url: continue
+            # O site carrega os episódios via AJAX. Precisamos simular essa chamada.
+            tmdb_id_tag = soup.select_one('div[data-tmdb-id]')
+            if tmdb_id_tag and tmdb_id_tag.get('data-tmdb-id'):
+                tmdb_id = tmdb_id_tag['data-tmdb-id']
+                log.info(f"[MinhaSerie] Encontrado TMDB ID: {tmdb_id}. Buscando episódios via AJAX.")
+                
+                ajax_url = urljoin(BASE_URL_MINHASERIE, "ajax/seasons/episodes/")
+                post_data = {'tmdb': tmdb_id}
+                
+                try:
+                    ajax_response = requests.post(ajax_url, headers=HTTP_HEADERS_MINHASERIE, data=post_data, timeout=20)
+                    ajax_response.raise_for_status()
+                    episodes_html = ajax_response.json().get('episodes', '')
                     
-                    try:
-                        season_response = requests.get(season_url, headers=HTTP_HEADERS_MINHASERIE, timeout=20)
-                        season_response.raise_for_status()
-                        season_soup = BeautifulSoup(season_response.text, 'html.parser')
+                    if episodes_html:
+                        episodes_soup = BeautifulSoup(episodes_html, 'html.parser')
+                        episode_list_items = episodes_soup.select('a.episode-card')
                         
-                        episode_list_items = season_soup.select('ul.episode-list a.episode-card')
                         for ep_link in episode_list_items:
                             ep_url = ep_link.get('href')
                             ep_title_tag = ep_link.select_one('h3.episode-title')
                             ep_title = ep_title_tag.get_text(strip=True) if ep_title_tag else "Episódio"
                             if ep_url and ep_title:
                                 details['episodes'].append({'title': ep_title, 'url': urljoin(BASE_URL_MINHASERIE, ep_url)})
-                    except Exception as season_e:
-                        log.error(f"[MinhaSerie] Erro ao buscar episódios da temporada {season_url}: {season_e}")
+                    else:
+                        log.warning("[MinhaSerie] Resposta AJAX para episódios veio vazia.")
+                    
+                except Exception as ajax_e:
+                    log.error(f"[MinhaSerie] Erro ao fazer requisição AJAX para episódios: {ajax_e}")
             else:
-                # Fallback para caso os episódios estejam na página principal (filmes, etc)
-                log.info("[MinhaSerie] Nenhuma temporada encontrada, procurando episódios na página principal.")
-                episode_list_items = soup.select('ul.episode-list a.episode-card')
-                for ep_link in episode_list_items:
-                    ep_url = ep_link.get('href')
-                    ep_title_tag = ep_link.select_one('h3.episode-title')
-                    ep_title = ep_title_tag.get_text(strip=True) if ep_title_tag else "Episódio"
-                    if ep_url and ep_title:
-                        details['episodes'].append({'title': ep_title, 'url': urljoin(BASE_URL_MINHASERIE, ep_url)})
+                log.warning("[MinhaSerie] Não foi possível encontrar o TMDB ID na página para buscar episódios via AJAX.")
 
             if not details['episodes']:
                 log.warning(f"[MinhaSerie] Nenhum episódio encontrado para {anime_url} após verificar temporadas e página principal.")
