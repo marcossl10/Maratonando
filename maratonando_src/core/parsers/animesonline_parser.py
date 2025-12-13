@@ -11,6 +11,8 @@ BASE_URL_MINHASERIE = "https://www.minhaserie.site/"
 HTTP_HEADERS_MINHASERIE = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
     "Referer": BASE_URL_MINHASERIE,
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+    "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
 }
 
 class MinhaSerieParser:
@@ -38,8 +40,8 @@ class MinhaSerieParser:
             soup = BeautifulSoup(response.text, "html.parser")
 
             # O site mudou a estrutura da página de busca. Os resultados agora estão em tags <article> dentro de 'div.search-page'.
-            search_result_items = soup.select('div.result-content article')
-            log.debug(f"[MinhaSerie] Encontrados {len(search_result_items)} elementos 'div.result-content article' na página de busca.")
+            search_result_items = soup.select('div.search-page article')
+            log.debug(f"[MinhaSerie] Encontrados {len(search_result_items)} elementos 'div.search-page article' na página de busca.")
 
             for item_container in search_result_items:
                 title_tag = item_container.select_one('div.details div.title a')
