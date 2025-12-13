@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+# Executa o módulo da GUI CustomTkinter
+# Se o módulo ou suas dependências não forem encontrados, 'python -m' lidará com o erro.
+exec python -m maratonando.gui "$@"
