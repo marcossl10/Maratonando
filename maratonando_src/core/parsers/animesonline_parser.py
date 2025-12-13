@@ -97,21 +97,41 @@ class MinhaSerieParser:
             else:
                 log.debug(f"[MinhaSerie] Container de sinopse ('div.synopsis p') não encontrado para {anime_url}")
 
-            # A estrutura de episódios é uma lista de links
-            episode_list_items = soup.select('ul.episode-list a.episode-card')
-            if not episode_list_items:
-                log.warning(f"[MinhaSerie] Nenhum item de episódio ('ul.episode-list a.episode-card') encontrado para {anime_url}.")
+            # O site organiza episódios por temporadas, em páginas separadas.
+            season_links = soup.select('div.season-list a.season-item')
+            if season_links:
+                log.info(f"[MinhaSerie] Encontradas {len(season_links)} temporadas. Buscando episódios em cada uma.")
+                for season_link in season_links:
+                    season_url = season_link.get('href')
+                    if not season_url: continue
+                    
+                    try:
+                        season_response = requests.get(season_url, headers=HTTP_HEADERS_MINHASERIE, timeout=20)
+                        season_response.raise_for_status()
+                        season_soup = BeautifulSoup(season_response.text, 'html.parser')
+                        
+                        episode_list_items = season_soup.select('ul.episode-list a.episode-card')
+                        for ep_link in episode_list_items:
+                            ep_url = ep_link.get('href')
+                            ep_title_tag = ep_link.select_one('h3.episode-title')
+                            ep_title = ep_title_tag.get_text(strip=True) if ep_title_tag else "Episódio"
+                            if ep_url and ep_title:
+                                details['episodes'].append({'title': ep_title, 'url': urljoin(BASE_URL_MINHASERIE, ep_url)})
+                    except Exception as season_e:
+                        log.error(f"[MinhaSerie] Erro ao buscar episódios da temporada {season_url}: {season_e}")
+            else:
+                # Fallback para caso os episódios estejam na página principal (filmes, etc)
+                log.info("[MinhaSerie] Nenhuma temporada encontrada, procurando episódios na página principal.")
+                episode_list_items = soup.select('ul.episode-list a.episode-card')
+                for ep_link in episode_list_items:
+                    ep_url = ep_link.get('href')
+                    ep_title_tag = ep_link.select_one('h3.episode-title')
+                    ep_title = ep_title_tag.get_text(strip=True) if ep_title_tag else "Episódio"
+                    if ep_url and ep_title:
+                        details['episodes'].append({'title': ep_title, 'url': urljoin(BASE_URL_MINHASERIE, ep_url)})
 
-            for ep_link in episode_list_items:
-                ep_url = ep_link.get('href')
-                ep_title_tag = ep_link.select_one('h3.episode-title')
-                ep_title = ep_title_tag.get_text(strip=True) if ep_title_tag else "Episódio"
-                
-                if ep_url and ep_title:
-                    details['episodes'].append({
-                        'title': ep_title,
-                        'url': urljoin(BASE_URL_MINHASERIE, ep_url)
-                    })
+            if not details['episodes']:
+                log.warning(f"[MinhaSerie] Nenhum episódio encontrado para {anime_url} após verificar temporadas e página principal.")
 
         except requests.exceptions.RequestException as e:
             log.error(f"[MinhaSerie] Erro de rede ao buscar detalhes ({anime_url}): {e}")
