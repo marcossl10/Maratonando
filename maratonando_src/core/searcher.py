@@ -13,10 +13,7 @@ log = logging.getLogger(__name__)
 # A chave 'instance' deve conter uma instância da classe do parser.
 parsers_list: List[Dict[str, Any]] = [
     {'name': 'AnimeFire', 'instance': AnimeFireParser()},
-    {'name': 'MinhaSerie', 'instance': MinhaSerieParser()},
-    # Se você adicionar um novo parser (ex: MeuNovoParser em meu_novo_parser.py),
-    # importe-o acima e adicione-o aqui:
-    # {'name': 'MeuNovoParser', 'instance': MeuNovoParser()},
+    # {'name': 'MinhaSerie', 'instance': MinhaSerieParser()}, # Removido para depuração
 ]
 
 def perform_search(query: str) -> List[Dict[str, str]]:
