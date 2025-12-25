@@ -1,6 +1,6 @@
 # Maratonando
 
-**Maratonando: Encontre e assista animes, filmes e séries diretamente do seu desktop Linux.**
+**Maratonando: Encontre e assista animes,diretamente do seu desktop Linux.**
 
 Este aplicativo permite buscar e reproduzir conteúdo de diversas fontes online, utilizando uma interface gráfica amigável construída com CustomTkinter ou uma interface de linha de comando (CLI). Ele se integra com o player MPV para uma experiência de visualização robusta.
 
