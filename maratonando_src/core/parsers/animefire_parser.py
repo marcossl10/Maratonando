@@ -11,7 +11,7 @@ from requests.packages.urllib3.util.connection import HAS_IPV6
 logging.getLogger(__name__).info("[AnimeFire Parser] Módulo importado com sucesso.")
 log = logging.getLogger(__name__)
 
-BASE_URL = "https://animefire.plus/"
+BASE_URL = "https://animefire.io/"
 SEARCH_URL_TEMPLATE = BASE_URL + "pesquisar/{query}"
 
 orig_allowed_gai_family = None
