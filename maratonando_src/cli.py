@@ -11,7 +11,6 @@ import traceback
 # A chave DEVE corresponder ao valor do campo 'source' nos resultados de `perform_search`.
 PARSER_MAP = {
     'AnimeFire': parsers.AnimeFireParser(),
-    # 'MinhaSerie': parsers.MinhaSerieParser(),
     # Adicione outros parsers aqui conforme necessário.
     # Ex: 'MeuNovoParser': parsers.MeuNovoParser(),
 }

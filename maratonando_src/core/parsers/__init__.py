@@ -5,4 +5,3 @@
 
 # Importa cada parser individualmente
 from .animefire_parser import AnimeFireParser
-from .minhaserie_parser import MinhaSerieParser
