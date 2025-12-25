@@ -553,7 +553,6 @@ class AnimeApp:
 
     def start_search_thread(self, event=None):
         query = self.search_entry.get().strip().lower()
-        logging.info(f"[GUI] Início da busca pela query: '{query}'")
         if not query:
             messagebox.showwarning("Busca", "Digite um termo para buscar.", parent=self.root)
             return
@@ -599,7 +598,6 @@ class AnimeApp:
             self.target_episode_url_from_history = None
 
     def update_search_results_display(self):
-        logging.info("[GUI] update_search_results_display chamado.")
         """Atualiza a exibição dos resultados da busca com paginação."""
         self._clear_scrollable_frame(self.search_results_scroll_frame)
 
@@ -612,7 +610,6 @@ class AnimeApp:
             return
 
         total_results = len(self.total_search_results_data)
-        logging.info(f"[GUI] update_search_results_display: Total de resultados recebidos: {total_results}")
         total_pages = math.ceil(total_results / self.search_results_per_page)
 
         if self.current_search_page < 1: self.current_search_page = 1
