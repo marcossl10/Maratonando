@@ -37,7 +37,7 @@ class AnimeApp:
 
         self.root.title("Maratonando Animes")
         ctk.set_appearance_mode("dark")
-        ctk.set_default_color_theme("blue") # Ou "green", "dark-blue"
+        ctk.set_default_color_theme("dark-blue") # Ou "green", "blue"
 
         self.logo_images_filenames = ["logo1.png", "logo2.png", "logo3.png"]
         self.logo_cycle_interval = 10
