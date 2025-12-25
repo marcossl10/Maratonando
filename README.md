@@ -22,7 +22,7 @@ Exemplo:
 
 ## Funcionalidades Principais
 
-*   Busca de animes, filmes e séries em diferentes fontes (atualmente AnimeFire e AnimesOnline).
+*   Busca de animes,
 *   Interface gráfica moderna e intuitiva.
 *   Interface de Linha de Comando (CLI) para usuários de terminal.
 *   Reprodução de vídeo utilizando o player MPV.
