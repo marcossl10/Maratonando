@@ -1,5 +1,8 @@
 import tkinter
-from packaging import version
+try:
+    from packaging import version
+except ImportError:
+    version = None
 import sys
 import os
 import platform

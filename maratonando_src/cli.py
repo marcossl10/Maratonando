@@ -173,3 +173,6 @@ def buscar(query):
         except Exception as e:
              click.echo(f"Ocorreu um erro inesperado: {e}", err=True)
              traceback.print_exc() # Mostra o traceback completo para depuração
+
+if __name__ == '__main__':
+    cli()
