@@ -1,6 +1,5 @@
 import subprocess
 import shutil
-import sys
 from typing import Optional
 import logging
 

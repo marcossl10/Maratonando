@@ -4,7 +4,6 @@ from typing import List, Dict
 import re
 from urllib.parse import urljoin
 import logging
-import sys
 import socket
 from requests.packages.urllib3.util.connection import HAS_IPV6
 

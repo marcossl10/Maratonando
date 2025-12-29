@@ -2,8 +2,6 @@
 # Importação original que causa o ModuleNotFoundError quando embutido
 from maratonando_src import customtkinter as ctk # Importação corrigida
 import tkinter.messagebox as messagebox
-import tkinter.simpledialog as simpledialog
-import subprocess
 import json
 import os
 import threading
@@ -12,7 +10,6 @@ import math
 import re
 from pathlib import Path
 import hashlib
-import sys
 import logging
 from io import BytesIO
 import requests
