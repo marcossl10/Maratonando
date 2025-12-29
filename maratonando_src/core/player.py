@@ -25,9 +25,6 @@ class ExternalMediaPlayer:
             # Levanta erro para a GUI/CLI tratar, em vez de apenas logar.
             raise FileNotFoundError(f"Player '{self.player_executable}' não encontrado.")
 
-        # User-Agent and Referer are not directly passed to mpv anymore as it gets the direct video URL
-        # user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        # referer_url = "https://animefire.plus/" # Referer específico do AnimeFire, pode ser generalizado ou removido se não usado
 
         command = [
             self.player_executable,
@@ -37,6 +34,10 @@ class ExternalMediaPlayer:
         ]
         # Adicionar opções de cache/buffer se necessário, por exemplo:
         # command.extend(["--cache=yes", "--demuxer-max-bytes=500M", "--demuxer-readahead-secs=300"])
+        
+        if referer:
+            command.append(f"--referrer={referer}")
+            
         command.append(video_url)
 
         log.info(f"Executando: {' '.join(command)}")

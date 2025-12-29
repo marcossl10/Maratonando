@@ -11,7 +11,7 @@ from requests.packages.urllib3.util.connection import HAS_IPV6
 logging.getLogger(__name__).info("[AnimeFire Parser] Módulo importado com sucesso.")
 log = logging.getLogger(__name__)
 
-BASE_URL = "https://animefire.io/"
+BASE_URL = "https://animefire.io/" # Garantindo o novo domínio
 SEARCH_URL_TEMPLATE = BASE_URL + "pesquisar/{query}"
 
 orig_allowed_gai_family = None
@@ -29,7 +29,7 @@ def _unset_ipv4():
         socket.getaddrinfo.__defaults__ = (orig_allowed_gai_family,) + socket.getaddrinfo.__defaults__[1:]
 
 HTTP_HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     'Referer': BASE_URL,
 }
 
@@ -39,7 +39,7 @@ class AnimeFireParser:
 
     def search(self, query: str) -> List[Dict[str, str]]:
         """
-        Busca por animes no AnimeFire.plus.
+        Busca por animes no AnimeFire.io.
         Retorna uma lista de dicionários, cada um contendo 'title', 'url' e 'image'.
         """
         log.info(f"[AnimeFire] Função search iniciada para query: '{query}'")

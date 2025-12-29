@@ -115,7 +115,7 @@ def buscar(query):
                                     PLAYER_INSTANCE.play_episode( # Usa o método da instância do player
                                         final_video_url,
                                         title=f"{selected_item.get('title')} - {ep_title}",
-                                        referer=None # O método play_episode em player.py não usa referer atualmente
+                                        referer="https://animefire.io/"
                                     )
                                 else:
                                     click.echo("  [CLI] Não foi possível obter fontes de vídeo para o episódio.", err=True)
@@ -154,7 +154,7 @@ def buscar(query):
                             PLAYER_INSTANCE.play_episode( # Usa o método da instância do player
                                 final_video_url,
                                 title=selected_item.get('title', 'Filme'),
-                                referer=None # O método play_episode em player.py não usa referer atualmente
+                                referer="https://animefire.io/"
                             )
                         else:
                             click.echo("  [CLI] Não foi possível obter fontes de vídeo para este item.", err=True)

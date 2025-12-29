@@ -1,5 +1,5 @@
 # /home/marcos/Maratonando/maratonando_src/gui.py
- # Importação original que causa o ModuleNotFoundError quando embutido
+# Importação original que causa o ModuleNotFoundError quando embutido
 from maratonando_src import customtkinter as ctk # Importação corrigida
 import tkinter.messagebox as messagebox
 import tkinter.simpledialog as simpledialog
@@ -11,17 +11,23 @@ import time
 import math
 import re
 from pathlib import Path
-import hashlib 
+import hashlib
 import sys
 import logging
 from io import BytesIO
 import requests
 from PIL import Image, ImageTk, ImageFont, ImageDraw 
 
-from .core.parsers import AnimeFireParser
+from .core import parsers
+from .core.searcher import perform_search as perform_core_search
 from .core.player import ExternalMediaPlayer
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# Mapeamento de nome da fonte para instâncias das classes de parser (Igual ao CLI).
+PARSER_MAP = {
+    'AnimeFire': parsers.AnimeFireParser(),
+}
 
 HISTORY_FILE = "history.json"
 
@@ -95,8 +101,7 @@ class AnimeApp:
         self.search_bar_frame.pack(fill="x", pady=5, padx=10)
 
         # --- Lógica do Parser Simplificada ---
-        self.active_parser = AnimeFireParser()
-        self.active_parser_name = "AnimeFire" # Nome interno para o histórico
+        self.current_source = None # Fonte do anime selecionado atualmente
 
         self.search_entry = ctk.CTkEntry(self.search_bar_frame, placeholder_text="Buscar anime...")
         self.search_entry.pack(side="left", expand=True, fill="x", padx=(0,5))
@@ -314,7 +319,12 @@ class AnimeApp:
                 try:
                     font_size = max(8, int(size[1] * 0.6))
                     font = ImageFont.truetype("DejaVuSans.ttf", font_size)
-                except IOError:
+                except OSError:
+                    try:
+                        font = ImageFont.truetype("arial.ttf", font_size)
+                    except OSError:
+                        font = ImageFont.load_default()
+                except Exception:
                     font = ImageFont.load_default()
                 
                 text_bbox = draw.textbbox((0,0), placeholder_text, font=font)
@@ -521,7 +531,7 @@ class AnimeApp:
         timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
         new_entry = {"anime_title": anime_title, "episode_title": episode_title, "episode_url": episode_url,
                      "anime_url": anime_url, "anime_image_url": anime_image_url, "timestamp": timestamp,
-                     "parser": self.active_parser_name, "favorite": is_favorite }
+                     "parser": self.current_source or "AnimeFire", "favorite": is_favorite }
         self.history_data = [item for item in self.history_data if item.get('episode_url') != episode_url]
         self.history_data.append(new_entry)
         max_history = 100
@@ -569,9 +579,9 @@ class AnimeApp:
 
     def perform_search(self, query):
         try:
-            results = self.active_parser.search(query)
+            results = perform_core_search(query)
             self.total_search_results_data = results
-            logging.info(f"[GUI] perform_search retornou {len(results)} resultados do parser.") 
+            logging.info(f"[GUI] perform_search retornou {len(results)} resultados.") 
             
             def _process_thread_results():
                 self.set_ui_state("normal")
@@ -591,7 +601,7 @@ class AnimeApp:
 
             self.root.after(0, _process_thread_results)
         except Exception as e:
-            logging.exception(f"ERRO na busca por '{query}' com parser '{self.active_parser_name}'")
+            logging.exception(f"ERRO na busca por '{query}'")
             self.update_status(f"Erro na busca: {e}")
             self.root.after(0, lambda: self.set_ui_state("normal"))
             self.root.after(0, lambda err=e: messagebox.showerror("Erro", f"Erro ao buscar: {err}", parent=self.root))
@@ -884,6 +894,7 @@ class AnimeApp:
         if selected_anime_info:
             self.selected_anime_title = selected_anime_info.get('title', 'Anime Desconhecido')
             self.selected_anime_url_for_history = selected_anime_info.get('url')
+            self.current_source = selected_anime_info.get('source', 'AnimeFire')
             self.update_status(f"Carregando: {self.selected_anime_title}...")
             self.current_anime_search_result_info = selected_anime_info # Armazena info da busca
             self._clear_scrollable_frame(self.episodes_scroll_frame)
@@ -1004,7 +1015,11 @@ class AnimeApp:
 
     def perform_fetch_episodes(self, anime_url):
         try:
-            details = self.active_parser.get_details(anime_url)
+            parser = PARSER_MAP.get(self.current_source)
+            if not parser:
+                raise ValueError(f"Parser '{self.current_source}' não encontrado.")
+
+            details = parser.get_details(anime_url)
             self.episode_details_data = details
             
             # Passa a URL da imagem original da busca como fallback
@@ -1058,16 +1073,16 @@ class AnimeApp:
         anime_title_from_history = selected_history_item.get('anime_title', '')
         anime_url_from_history = selected_history_item.get('anime_url')
         self.target_episode_url_from_history = selected_history_item.get('episode_url')
-        parser_from_history = selected_history_item.get('parser', self.active_parser_name)
+        parser_from_history = selected_history_item.get('parser', 'AnimeFire')
 
         if not all([anime_title_from_history, anime_url_from_history, self.target_episode_url_from_history]):
             self.update_status("Dados do histórico incompletos.")
             self.target_episode_url_from_history = None
             return
 
-        # Apenas o parser AnimeFire é suportado agora
-        if parser_from_history != "AnimeFire":
-            messagebox.showwarning("Servidor Indisponível", f"O item do histórico foi assistido em um servidor ('{parser_from_history}') que não está mais ativo. A busca será feita no servidor padrão.", parent=self.root)
+        # Verifica se o parser do histórico ainda é suportado
+        if parser_from_history not in PARSER_MAP:
+            messagebox.showwarning("Servidor Indisponível", f"O item do histórico foi assistido em um servidor ('{parser_from_history}') que não está mais disponível. A busca tentará encontrar em outros servidores.", parent=self.root)
         
         self.selected_anime_title = anime_title_from_history
         self.selected_anime_url_for_history = anime_url_from_history
@@ -1088,7 +1103,11 @@ class AnimeApp:
 
     def perform_get_video(self, episode_page_url):
         try:
-            video_sources = self.active_parser.get_video_source(episode_page_url)
+            parser = PARSER_MAP.get(self.current_source)
+            if not parser:
+                 raise ValueError(f"Parser '{self.current_source}' não encontrado.")
+
+            video_sources = parser.get_video_source(episode_page_url)
             if not video_sources:
                 self.root.after(0, lambda: (
                     self.update_status("Falha ao obter o link do vídeo do site."),
@@ -1154,7 +1173,7 @@ class AnimeApp:
 
     def _run_play_video_thread(self, video_url, title):
         try:
-            self.player.play_episode(video_url, title=title, referer=None)
+            self.player.play_episode(video_url, title=title, referer="https://animefire.io/")
         except FileNotFoundError:
              logging.error(f"Erro FileNotFoundError ao tentar executar play_video (mpv não encontrado?).")
         except Exception as play_err:
