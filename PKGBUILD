@@ -1,108 +1,58 @@
 # Maintainer: Marcos <marcosslprado@gmail.com>
 pkgname=maratonando
-pkgver=2.0.0
+pkgver=1.0.0
 pkgrel=1
-pkgdesc="Busca e assiste animes."
+pkgdesc="Assista animes e séries via CLI ou GUI"
 arch=('any')
-url="https://github.com/marcossl10/Maratonando" # URL do projeto, não do git clone
-license=('MIT')
-depends=(
-    'python'
-    'python-customtkinter'  # Adicionado para a interface CustomTkinter
-    'python-pillow'         # Adicionado para tratamento de imagens (capas, ícones)
-    'python-requests'
-    'python-beautifulsoup4' # Para parsear HTML
-    'python-click'          # Para CLI
-    'yt-dlp'                # Para baixar vídeos (usado por alguns parsers)
-    'mpv'                   # Player de vídeo externo
-)
-# makedepends geralmente lista pacotes necessários APENAS para o processo de build (ex: setuptools, wheel)
-makedepends=()
-# O makepkg irá nomear o diretório fonte como NomeDoRepo-Tag
-# Exemplo: Maratonando-2.0.0 ou Maratonando-v2.0.0
-source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/refs/tags/v${pkgver}.tar.gz"
-        "maratonando.desktop"
-        "maratonando.png::${url}/raw/v${pkgver}/icons/maratonando.png" # Baixa da tag específica
-        "LICENSE::${url}/raw/v${pkgver}/LICENSE") # Baixa da tag específica
-sha256sums=('619b051a07a99b96838b66b19ade8b4cfd76bf189cc447aa3c0f561c62949154'
-            'c8fdc92dc2287224fe982af8ffba37c0d8418dd9ff06ede5e1ecd0be13718ed7'
-            '54b8f5958b72d9ebe5ff9bc58a608ca6ad21cad132f6d44f605d6208332365b4'
-            'dd6ab43eaab3d3190bc738b25981f07f5c3601712c3d2cbec7b7b0fe4701f04b')
+url="https://github.com/marcossl10/Maratonando"
+license=('GPL')
+depends=('python' 'python-requests' 'python-beautifulsoup4' 'python-pillow' 'python-click' 'yt-dlp' 'mpv' 'tk')
+makedepends=('git')
+provides=('maratonando')
+conflicts=('maratonando')
+source=("git+https://github.com/marcossl10/Maratonando.git")
+md5sums=('SKIP')
 
-
-prepare() {
-    # Navega para o diretório srcdir primeiro
-    cd "${srcdir}"
-    # Encontra o diretório extraído (deve haver apenas um após a extração do tarball)
-    # e entra nele. O nome pode variar dependendo de como o GitHub nomeia o diretório raiz no tarball.
-    # Assumindo que o nome do diretório extraído é "Maratonando-${pkgver}" ou "Maratonando-v${pkgver}"
-    # A variável extracted_dir é usada para flexibilidade, caso o nome do diretório mude.
-    extracted_dir=$(ls -d Maratonando-${pkgver}/ 2>/dev/null || ls -d Maratonando-v${pkgver}/ 2>/dev/null || ls -d */ | head -n 1 | sed 's/\///')
-
-    if [ -z "${extracted_dir}" ] || [ ! -d "${extracted_dir}" ]; then
-        echo "ERRO: Diretório fonte extraído não encontrado em '$(pwd)'!" >&2
-        echo "Conteúdo de '$(pwd)':" >&2
-        ls -lah "$(pwd)" >&2
-        return 1 # Falha o build
-    fi
-    cd "${extracted_dir}" || return 1
-
-    echo "Entrou em: $(pwd)"
-    echo "Conteúdo de $(pwd) após extração:"
-    ls -lah
+pkgver() {
+	cd "Maratonando"
+	printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
 }
 
 package() {
-    # Navega para o diretório do código fonte extraído.
-    # Usa a mesma lógica de `prepare()` para encontrar o diretório.
-    cd "${srcdir}"
-    extracted_dir=$(ls -d Maratonando-${pkgver}/ 2>/dev/null || ls -d Maratonando-v${pkgver}/ 2>/dev/null || ls -d */ | head -n 1 | sed 's/\///')
+	cd "Maratonando"
+	
+	_install_dir="/usr/share/$pkgname"
+	
+	install -d "$pkgdir$_install_dir"
+	install -d "$pkgdir/usr/bin"
+	install -d "$pkgdir/usr/share/applications"
+	install -d "$pkgdir/usr/share/icons/hicolor/256x256/apps"
 
-    if [ -z "${extracted_dir}" ] || [ ! -d "${extracted_dir}" ]; then
-        echo "ERRO: Diretório fonte extraído não encontrado em '$(pwd)' durante package()!" >&2
-        return 1 # Falha o build
-    fi
-    cd "${extracted_dir}" || return 1
+	# Copia o código fonte e recursos
+	cp -r maratonando_src "$pkgdir$_install_dir/"
+	cp -r icons "$pkgdir$_install_dir/"
+	install -m644 main.py "$pkgdir$_install_dir/"
+	
+	# Instala o ícone para o sistema
+	if [ -f "icons/maratonando.png" ]; then
+		install -m644 "icons/maratonando.png" "$pkgdir/usr/share/icons/hicolor/256x256/apps/$pkgname.png"
+	fi
 
+	# Cria o script de execução no /usr/bin
+	echo "#!/bin/sh" > "$pkgdir/usr/bin/$pkgname"
+	echo "exec python3 $_install_dir/main.py \"\$@\"" >> "$pkgdir/usr/bin/$pkgname"
+	chmod 755 "$pkgdir/usr/bin/$pkgname"
 
-    _pythondir="${pkgdir}/usr/lib/python$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')/site-packages"
-
-    # Cria o diretório de destino para o módulo Python
-    install -d "${_pythondir}/${pkgname}"
-
-    # --- Verificação Essencial ---
-    if [ ! -d "maratonando_src" ]; then
-        # Verifica se o diretório do módulo Python existe
-        echo "ERRO: Diretório fonte 'maratonando_src' não encontrado em '$(pwd)'!" >&2
-        echo "Conteúdo de '$(pwd)':" >&2
-        ls -lah "$(pwd)" >&2
-        return 1 # Falha o build
-    fi
-
-    # Instala o módulo Python
-    cp -r maratonando_src/* "${_pythondir}/${pkgname}/"
-    # O diretório assets e outros subdiretórios dentro de maratonando_src
-    # já são copiados pelo 'cp -r maratonando_src/*'.
-
-    # Instala o ícone (baixado do repo ou local)
-    install -Dm644 "${srcdir}/maratonando.png" "${pkgdir}/usr/share/pixmaps/${pkgname}.png"
-
-    # Cria o script executável em /usr/bin
-    # Garante que o diretório de destino para o script exista
-    install -d "${pkgdir}/usr/bin"
-
-    cat > "${pkgdir}/usr/bin/${pkgname}" <<EOF
-#!/usr/bin/env bash
-
-# Executa o módulo da GUI CustomTkinter
-# Se o módulo ou suas dependências não forem encontrados, 'python -m' lidará com o erro.
-exec python -m ${pkgname}.gui "\$@"
+	# Cria o atalho .desktop
+	cat > "$pkgdir/usr/share/applications/$pkgname.desktop" <<EOF
+[Desktop Entry]
+Name=Maratonando
+Comment=Assista animes e séries
+Exec=$pkgname
+Icon=$pkgname
+Terminal=false
+Type=Application
+Categories=Video;AudioVideo;
+StartupNotify=true
 EOF
-    chmod +x "${pkgdir}/usr/bin/${pkgname}"
-
-    # Instala o arquivo .desktop
-    install -Dm644 "${srcdir}/${pkgname}.desktop" "${pkgdir}/usr/share/applications/${pkgname}.desktop"
-
-    # Instala a licença
-    install -Dm644 "LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
 }

@@ -13,3 +13,8 @@ venv/
 # Arquivos de dados locais do app
 history.json
 *.log
+
+# Arquivos de build do Arch Linux (makepkg)
+pkg/
+src/
+*.pkg.tar.zst
